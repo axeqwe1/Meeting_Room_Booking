@@ -105,7 +105,7 @@ const RoomManagement: React.FC = () => {
       createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-gray-500 opacity-75 z-40" onClick={handleShowRoomForm}></div>
-          <div className="z-50 w-full max-w-md bg-white rounded-lg shadow-lg">
+          <div className="z-50 w-full max-w-md bg-white rounded-lg shadow-lg animate-fadeIn">
             <RoomForm
               room={selectedRoom}
               onSubmit={selectedRoom ? handleEditRoom : handleAddRoom}
