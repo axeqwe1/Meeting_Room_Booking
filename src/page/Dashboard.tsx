@@ -19,8 +19,41 @@ const Dashboard: React.FC = () => {
   const [initialDate, setInitialDate] = useState<Date | undefined>(undefined);
   const [initialEndDate, setInitialEndDate] = useState<Date | undefined>(undefined);
   const [showRoomList, setShowRoomList] = useState(false);
+  const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
 
+  const generateShuffledColors = () => {
+    const colors = [
+      '#EF4444', // Red-500
+      '#F59E0B', // Amber-500
+      '#10B981', // Emerald-500
+      '#3B82F6', // Blue-500
+      '#8B5CF6', // Violet-500
+      '#EC4899', // Pink-500
+      '#F97316', // Orange-500
+      '#14B8A6', // Teal-500
+    ];
+
+    // Fisher–Yates Shuffle
+    for (let i = colors.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [colors[i], colors[j]] = [colors[j], colors[i]];
+    }
+
+    return colors;
+  };
+
+  useEffect(() => {
+    const shuffledColors = generateShuffledColors();
+    const newColors: { [roomId: string]: string } = {};
+
+    allRooms.forEach((room, index) => {
+      newColors[room.id] = shuffledColors[index % shuffledColors.length]; // เผื่อห้อง > สี
+    });
+
+    setRoomColors(newColors);
+  }, [allRooms]);
   // Convert bookings to calendar events
+  
   useEffect(() => {
     const calendarEvents = allBookings.map(booking => {
       const room = allRooms.find(r => r.id === booking.roomId);
@@ -30,12 +63,13 @@ const Dashboard: React.FC = () => {
         start: booking.start,
         end: booking.end,
         roomId: booking.roomId,
-        roomName: room?.name
+        roomName: room?.name,
+        color: roomColors[booking.roomId] || '#999999'
       };
     });
     setEvents(calendarEvents);
-  }, [allBookings, allRooms]);
-
+  }, [allBookings, allRooms, roomColors]);
+  
   const handleSelectEvent = (event: CalendarEvent) => {
     setSelectedEvent(event);
     const booking = allBookings.find(b => b.id === event.id);
@@ -101,6 +135,10 @@ const Dashboard: React.FC = () => {
     setSelectedBooking(undefined);
   };
 
+  const roomsWithColor = allRooms.map(room => ({
+    ...room,
+    color: roomColors[room.id] || '#999999'
+  }));
   return (
     <>
       <div className="h-full flex flex-col">
@@ -127,7 +165,7 @@ const Dashboard: React.FC = () => {
           {/* Room List - Hidden on mobile when calendar is shown */}
           <div className={`${!showRoomList ? 'hidden' : 'block'} lg:block lg:w-1/4`}>
             <RoomList 
-              rooms={allRooms}
+              rooms={roomsWithColor}
               onSelectRoom={handleSelectRoom}
               selectedRoomId={selectedRoom?.id}
             />

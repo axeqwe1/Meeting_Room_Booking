@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Room } from '../types';
 import { Users, MapPin, MonitorSmartphone } from 'lucide-react';
 
@@ -9,6 +9,7 @@ interface RoomListProps {
 }
 
 const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId }) => {
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-200">
@@ -32,7 +33,7 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId
               </div>
               
               <div className="flex-1 min-w-0">
-                <h4 className="text-base font-semibold text-gray-800 truncate">{room.name}</h4>
+                <h4 className="text-base font-semibold text-gray-800 truncate">{room.name} <span className='inline-block w-3 h-3 ml-2 rounded-full' style={{backgroundColor: room.color }}></span></h4>
                 
                 <div className="mt-1 flex items-center text-sm text-gray-500">
                   <Users className="h-4 w-4 mr-1" />

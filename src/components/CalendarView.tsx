@@ -2,8 +2,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Calendar, Views, momentLocalizer, View, DateLocalizer, Formats } from 'react-big-calendar';
 import moment from 'moment';
 import { format } from 'date-fns';
-import { CalendarEvent } from '../types';
+import { CalendarEvent, Room } from '../types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { rooms, bookings } from '../data/dummyData';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 // import CustomWeekWithoutSunday from '../data/CustomWeekView';
 interface CalendarViewProps {
@@ -27,18 +28,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 }) => {
   const [view, setView] = useState<View>(Views.WORK_WEEK as View);
   const [date, setDate] = useState(new Date());
-// ประกาศรูปแบบที่ถูกต้อง
-const calendarFormats: Formats = {
-  timeGutterFormat: 'HH:mm',
-  eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
-    `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
-  agendaTimeFormat: 'HH:mm',
-  agendaTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
-    `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
-  dayFormat: 'D MMMM YYYY',
-  weekdayFormat: 'dddd',
-  monthHeaderFormat: 'MMMM YYYY'
-};
+  const [selectedRoomIdFilter, setSelectedRoomIdFilter] = useState<string | undefined>(undefined);
+  const [allRooms] = useState<Room[]>(rooms);
+
+  const filteredEvents = selectedRoomIdFilter
+    ? events.filter(event => event.roomId === selectedRoomIdFilter)
+    : events;
+
+  // ประกาศรูปแบบที่ถูกต้อง
+  const calendarFormats: Formats = {
+    timeGutterFormat: 'HH:mm',
+    eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
+      `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
+    agendaTimeFormat: 'HH:mm',
+    agendaTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
+      `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
+    dayFormat: 'D MMMM YYYY',
+    weekdayFormat: 'dddd',
+    monthHeaderFormat: 'MMMM YYYY'
+  };
 
   const handleViewChange = (newView: View) => {
     setView(newView);
@@ -62,15 +70,21 @@ const calendarFormats: Formats = {
     setDate(newDate);
   };
 
-  const eventStyleGetter = (event: CalendarEvent) => {
-    let style = {
-      backgroundColor: '#3B82F6',
-      borderRadius: '4px',
-      color: 'white',
+const eventStyleGetter = (event: any) => {
+  const baseColor = event.color
+
+  return {
+    style: {
+      backgroundColor: baseColor,
+      color:  'white', // white text or grey text
+      borderRadius: '6px',
       border: 'none',
-    };
-    return { style };
+      padding: '4px',
+      opacity: 1 ,
+      transition: 'all 0.2s',
+    },
   };
+};
 
 
   const {defaultDate} = useMemo(() => ({
@@ -102,8 +116,21 @@ const calendarFormats: Formats = {
           <h2 className="text-lg font-semibold text-gray-800">
             {format(date, view === 'day' ? 'MMMM d, yyyy' : view === 'week' ? 'MMMM yyyy' : 'MMMM yyyy')}
           </h2>
+          <div className="mb-2">
+            <select
+              className="select select-primary"
+              value={selectedRoomIdFilter || ''}
+              onChange={e => setSelectedRoomIdFilter(e.target.value || undefined)}
+            >
+              <option value="">All Rooms</option>
+              {allRooms.map(room => (
+                <option key={room.id} value={room.id}>
+                  {room.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        
         <div className="flex border border-gray-300 rounded-md overflow-hidden w-full sm:w-auto">
           <button 
             onClick={() => handleViewChange('day')}
@@ -130,7 +157,7 @@ const calendarFormats: Formats = {
         <div className="h-full calendar-container">
           <Calendar
             localizer={localizer}
-            events={events}
+            events={filteredEvents}
             startAccessor="start"
             endAccessor="end"
             style={{ height: '100%' }}
