@@ -40,7 +40,7 @@ const Sidebar: React.FC = () => {
       }`}
     >
       {/* เปลี่ยนจาก flex-col เป็น grid และกำหนดพื้นที่ให้ชัดเจน */}
-      <div className="h-full grid grid-rows-[auto_auto_1fr_auto]">
+      <div className="h-full grid grid-rows-[auto_9fr_1fr_auto]">
         {/* Collapse Toggle (แถวที่ 1) */}
         <div className="p-4 flex justify-end">
           <button
@@ -92,7 +92,7 @@ const Sidebar: React.FC = () => {
         </nav>
 
         {/* Logout (แถวที่ 4 - ติดล่าง) */}
-        <div className="absolute bottom-0 p-4 border-t border-gray-200">
+        <div className=" bottom-0 p-4 border-t border-gray-200">
           <a
             href="#"
             onClick={(e) => {

@@ -28,7 +28,7 @@ export default function Login() {
       if (refAuth?.login) {
         refAuth.login(response.user)
         console.log(from)
-        navigate(from, { replace: true }) // กลับไปหน้าที่พยายามเข้าถึงก่อน login
+        navigate('/dashboard', { replace: true }) // กลับไปหน้าที่พยายามเข้าถึงก่อน login
       }
     } catch (err) {
       setError('Login failed')
