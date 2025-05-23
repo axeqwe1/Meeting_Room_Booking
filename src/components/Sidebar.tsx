@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
         </div>
 
         {/* New Booking Button (แถวที่ 2) */}
-        {!collapsed && (
+        {/* {!collapsed && (
           <div className="p-4 border-b border-gray-200">
             <button 
               className="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -62,7 +62,7 @@ const Sidebar: React.FC = () => {
               <span>New Booking</span>
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Navigation (แถวที่ 3 - ยืดหยุ่น) */}
         <nav className="px-2 py-4 space-y-1 overflow-y-auto">
@@ -92,7 +92,7 @@ const Sidebar: React.FC = () => {
         </nav>
 
         {/* Logout (แถวที่ 4 - ติดล่าง) */}
-        <div className=" p-4 border-t border-gray-200">
+        <div className="absolute bottom-0 p-4 border-t border-gray-200">
           <a
             href="#"
             onClick={(e) => {
