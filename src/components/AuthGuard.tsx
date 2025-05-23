@@ -13,7 +13,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   // ❗ อย่าให้มัน rerender ซ้ำโดยที่ state ไม่เปลี่ยนจริง ๆ
     console.log(refAuth?.isAuthenticate())
   if (!refAuth?.isAuthenticate()) {
-      console.log('trigger')
+      // console.log('trigger')
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

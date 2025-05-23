@@ -35,12 +35,13 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`sm:relative sm:block hidden z-40 h-screen bg-white border-r border-gray-200 flex-shrink-0 transition-all duration-300 ease-in-out ${
+      className={`sm:relative sm:block hidden z-40 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
-      <div className="h-full flex flex-col">
-        {/* Collapse Toggle */}
+      {/* เปลี่ยนจาก flex-col เป็น grid และกำหนดพื้นที่ให้ชัดเจน */}
+      <div className="h-full grid grid-rows-[auto_auto_1fr_auto]">
+        {/* Collapse Toggle (แถวที่ 1) */}
         <div className="p-4 flex justify-end">
           <button
             className="hover:cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors"
@@ -50,7 +51,7 @@ const Sidebar: React.FC = () => {
           </button>
         </div>
 
-        {/* New Booking Button */}
+        {/* New Booking Button (แถวที่ 2) */}
         {!collapsed && (
           <div className="p-4 border-b border-gray-200">
             <button 
@@ -63,8 +64,8 @@ const Sidebar: React.FC = () => {
           </div>
         )}
 
-        {/* Navigation */}
-        <nav className="flex-1 px-2 py-4 space-y-1">
+        {/* Navigation (แถวที่ 3 - ยืดหยุ่น) */}
+        <nav className="px-2 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -90,8 +91,8 @@ const Sidebar: React.FC = () => {
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-gray-200">
+        {/* Logout (แถวที่ 4 - ติดล่าง) */}
+        <div className=" p-4 border-t border-gray-200">
           <a
             href="#"
             onClick={(e) => {
