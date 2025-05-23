@@ -67,7 +67,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         <h3 className="text-lg font-medium">Book a Room</h3>
         <button 
           onClick={onCancel}
-          className="text-white hover:bg-blue-600 rounded-full p-1"
+          className="hover:cursor-pointer text-white hover:bg-blue-600 rounded-full p-1"
         >
           <X className="h-5 w-5" />
         </button>
@@ -183,7 +183,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               <button
                 type="button"
                 onClick={handleAddAttendee}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="hover:cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Add
               </button>
@@ -200,7 +200,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     <button
                       type="button"
                       onClick={() => handleRemoveAttendee(index)}
-                      className="ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
+                      className="hover:cursor-pointer ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -215,13 +215,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="hover:cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="hover:cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Book Room
           </button>

@@ -41,7 +41,7 @@ const RoomManagement: React.FC = () => {
               setSelectedRoom(undefined);
               setShowRoomForm(true);
             }}
-            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors hover:cursor-pointer"
+            className="hover:cursor-pointer flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors hover:cursor-pointer"
           >
             <Plus className="h-5 w-5 mr-2" />
             Add Room
@@ -86,13 +86,13 @@ const RoomManagement: React.FC = () => {
                       setSelectedRoom(room);
                       setShowRoomForm(true);
                     }}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-md"
+                    className=" hover:cursor-pointer p-2 text-blue-600 hover:bg-blue-50 rounded-md"
                   >
                     <Pencil className="h-5 w-5" />
                   </button>
                   <button
                     onClick={() => handleDeleteRoom(room.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                    className="hover:cursor-pointer p-2 text-red-600 hover:bg-red-50 rounded-md"
                   >
                     <Trash2 className="h-5 w-5" />
                   </button>
@@ -104,7 +104,7 @@ const RoomManagement: React.FC = () => {
   {showRoomForm &&
       createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-gray-500 opacity-75 z-40" onClick={handleShowRoomForm}></div>
+          <div className="absolute inset-0 bg-gray-500 opacity-75 z-40"></div>
           <div className="z-50 w-full max-w-md bg-white rounded-lg shadow-lg animate-fadeIn">
             <RoomForm
               room={selectedRoom}

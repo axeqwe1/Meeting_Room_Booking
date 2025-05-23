@@ -51,7 +51,8 @@
 }
 
 .rbc-label {
-  @apply max-w-[48px]
+  @apply max-w-[48px];
+  @apply min-w-[37px];
 }
 .rbc-toolbar {
   @apply flex-wrap justify-between mb-4;

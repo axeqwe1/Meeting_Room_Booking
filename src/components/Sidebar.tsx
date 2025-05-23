@@ -1,87 +1,108 @@
-import React from 'react';
-import { Calendar, LayoutGrid, Users, Settings, PlusCircle, Link,LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, LayoutGrid, Users, LogOut, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-
 const Sidebar: React.FC = () => {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const { logout } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleRoom = () => {
-    navigate('/rooms')
-  }
-  const handleCalendar = () => {
-    navigate('/dashboard')
-  }
-  const handleMyBookingRoom = () => {
-    navigate('/my-booking')
-  }
-  const handleLogout = () => {
-    refAuth.logout
-    navigate('/login')
-  }
-  const refAuth = useAuth()
+  // Navigation items config
+  const navItems = [
+    {
+      icon: Calendar,
+      label: 'Calendar',
+      path: '/dashboard',
+      action: () => navigate('/dashboard')
+    },
+    {
+      icon: LayoutGrid,
+      label: 'Rooms',
+      path: '/rooms',
+      action: () => navigate('/rooms')
+    },
+    {
+      icon: Users,
+      label: 'My Bookings',
+      path: '/my-booking',
+      action: () => navigate('/my-booking')
+    }
+  ];
+
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:block">
+    <aside
+      className={`sm:relative sm:block hidden z-40 h-screen bg-white border-r border-gray-200 flex-shrink-0 transition-all duration-300 ease-in-out ${
+        collapsed ? 'w-20' : 'w-64'
+      }`}
+    >
       <div className="h-full flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <button className="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
-            <PlusCircle className="h-5 w-5 mr-2" />
-            <span>New Booking</span>
+        {/* Collapse Toggle */}
+        <div className="p-4 flex justify-end">
+          <button
+            className="p-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
           </button>
         </div>
-        
+
+        {/* New Booking Button */}
+        {!collapsed && (
+          <div className="p-4 border-b border-gray-200">
+            <button 
+              className="w-full flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              onClick={() => navigate('/new-booking')}
+            >
+              <PlusCircle className="h-5 w-5 mr-2" />
+              <span>New Booking</span>
+            </button>
+          </div>
+        )}
+
+        {/* Navigation */}
         <nav className="flex-1 px-2 py-4 space-y-1">
-          <a
-          onClick={(e) => {
-            e.preventDefault();
-            handleCalendar()
-          }} 
-          href="#" 
-          className={`flex items-center px-4 py-2 rounded-md group ${
-            isActive('/dashboard') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-200'
-          }`}>
-            <Calendar className="h-5 w-5 mr-3 text-blue-500" />
-            <span className="font-medium">Calendar</span>
-          </a>
-          <a 
-          onClick={(e) => {
-            e.preventDefault();
-            handleRoom()
-          }} 
-          href="#" 
-          className={`flex items-center px-4 py-2 rounded-md group ${
-              isActive('/rooms') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-200'
-          }`}>
-            <LayoutGrid className="h-5 w-5 mr-3 text-gray-500" />
-            <span>Rooms</span>
-          </a>
-          <a 
-          onClick={(e) => {
-            e.preventDefault()
-            handleMyBookingRoom()
-          }} 
-          href="#" 
-          className={`flex items-center px-4 py-2 rounded-md group ${
-              isActive('/my-bookings') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-200'
-          }`}
-          >
-            <Users className="h-5 w-5 mr-3 text-gray-500" />
-            <span>My Bookings</span>
-          </a>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a
+                key={item.label}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  item.action();
+                }}
+                className={`flex items-center px-4 py-2 rounded-md group ${
+                  isActive(item.path) 
+                    ? 'text-blue-600 bg-blue-50' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                } ${collapsed ? 'justify-center' : ''}`}
+              >
+                <Icon className={`h-5 w-5 ${isActive(item.path) ? 'text-blue-500' : 'text-gray-500'} ${
+                  collapsed ? 'mr-0' : 'mr-3'
+                }`} />
+                {!collapsed && <span className="font-medium">{item.label}</span>}
+              </a>
+            );
+          })}
         </nav>
-        
+
+        {/* Logout */}
         <div className="p-4 border-t border-gray-200">
-          <a onClick={(e) => {
-            e.preventDefault()
-            handleLogout()
-            }} href="#" className="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md">
-            <LogOut className="h-5 w-5 mr-3 text-red-600" />
-            <span>Logout</span>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              logout();
+              navigate('/login');
+            }}
+            className={`flex items-center ${collapsed ? 'justify-center' : ''} px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md`}
+          >
+            <LogOut className="h-5 w-5 text-red-600" />
+            {!collapsed && <span className="ml-3">Logout</span>}
           </a>
         </div>
       </div>

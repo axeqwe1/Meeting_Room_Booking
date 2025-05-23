@@ -141,7 +141,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
               <button
                 type="button"
                 onClick={handleAddAmenity}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="hover:cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <Plus className="h-5 w-5" />
               </button>
@@ -158,7 +158,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
                     <button
                       type="button"
                       onClick={() => handleRemoveAmenity(index)}
-                      className="ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
+                      className="hover:cursor-pointer ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -173,13 +173,13 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="hover:cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="hover:cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             {room ? 'Save Changes' : 'Add Room'}
           </button>

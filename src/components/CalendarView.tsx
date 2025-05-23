@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Calendar, Views, momentLocalizer, View, DateLocalizer, Formats } from 'react-big-calendar';
 import moment from 'moment';
 import { format } from 'date-fns';
@@ -11,6 +11,7 @@ interface CalendarViewProps {
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
   onSelectSlot: (slotInfo: any) => void;
+  onSelectRoomId : (roomId:any) => void;
 }
 
 const localizer: DateLocalizer = momentLocalizer(moment);
@@ -24,7 +25,8 @@ interface TimeRangeFormatArgs {
 const CalendarView: React.FC<CalendarViewProps> = ({ 
   events, 
   onSelectEvent, 
-  onSelectSlot 
+  onSelectSlot,
+  onSelectRoomId,
 }) => {
   const [view, setView] = useState<View>(Views.WORK_WEEK as View);
   const [date, setDate] = useState(new Date());
@@ -35,6 +37,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     ? events.filter(event => event.roomId === selectedRoomIdFilter)
     : events;
 
+    useEffect(() => {
+      const data = rooms.filter((item) => {
+        return item.id == selectedRoomIdFilter
+      })[0]
+      onSelectRoomId(data)
+    },[filteredEvents])
   // ประกาศรูปแบบที่ถูกต้อง
   const calendarFormats: Formats = {
     timeGutterFormat: 'HH:mm',
@@ -78,7 +86,7 @@ const eventStyleGetter = (event: any) => {
       backgroundColor: baseColor,
       color:  'white', // white text or grey text
       borderRadius: '6px',
-      border: 'none',
+      border: '1px solid #c7c7c7',
       padding: '4px',
       opacity: 1 ,
       transition: 'all 0.2s',
@@ -97,19 +105,19 @@ const eventStyleGetter = (event: any) => {
         <div className="flex items-center space-x-2">
           <button 
             onClick={() => handleNavigate('TODAY')}
-            className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            className="hover:cursor-pointer px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
             Today
           </button>
           <button 
             onClick={() => handleNavigate('PREV')}
-            className="p-1.5 rounded-md hover:bg-gray-100"
+            className="hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100"
           >
             <ChevronLeft className="h-5 w-5 text-gray-500" />
           </button>
           <button 
             onClick={() => handleNavigate('NEXT')}
-            className="p-1.5 rounded-md hover:bg-gray-100"
+            className="hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100"
           >
             <ChevronRight className="h-5 w-5 text-gray-500" />
           </button>
@@ -118,7 +126,7 @@ const eventStyleGetter = (event: any) => {
           </h2>
           <div className="mb-2">
             <select
-              className="select select-primary"
+              className="hover:cursor-pointer select select-primary"
               value={selectedRoomIdFilter || ''}
               onChange={e => setSelectedRoomIdFilter(e.target.value || undefined)}
             >
@@ -134,19 +142,19 @@ const eventStyleGetter = (event: any) => {
         <div className="flex border border-gray-300 rounded-md overflow-hidden w-full sm:w-auto">
           <button 
             onClick={() => handleViewChange('day')}
-            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'day' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'day' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
           >
             Day
           </button>
           <button 
             onClick={() => handleViewChange('work_week')}
-            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'work_week' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'work_week' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
           >
             Week
           </button>
           <button 
             onClick={() => handleViewChange('month')}
-            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'month' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'month' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
           >
             Month
           </button>

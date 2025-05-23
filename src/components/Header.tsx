@@ -22,7 +22,7 @@ const Header: React.FC = () => {
             onClick={() => navigate('/dashboard')}
           >
             <Calendar className="h-8 w-8 text-blue-500 mr-2" />
-            <h1 className="text-xl font-semibold text-gray-800">RoomBooker</h1>
+            <h1 className="text-xl font-semibold text-gray-800">YMT-RoomBooker</h1>
           </div>
         </div>
         

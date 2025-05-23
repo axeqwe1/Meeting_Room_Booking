@@ -12,15 +12,17 @@ const Dashboard: React.FC = () => {
   const [allRooms] = useState<Room[]>(rooms);
   const [allBookings, setAllBookings] = useState<Booking[]>(bookings);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [selectData, setSelectData] = useState<CalendarEvent[]>([])
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>(undefined);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | undefined>(undefined);
   const [selectedBooking, setSelectedBooking] = useState<Booking | undefined>(undefined);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showEventDetails, setShowEventDetails] = useState(false);
   const [initialDate, setInitialDate] = useState<Date | undefined>(undefined);
   const [initialEndDate, setInitialEndDate] = useState<Date | undefined>(undefined);
   const [showRoomList, setShowRoomList] = useState(false);
   const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
-
+  const [selectedFilterRoom,setSelectedFilterRoom] = useState<any>()
   const generateShuffledColors = () => {
     const colors = [
       '#EF4444', // Red-500
@@ -68,10 +70,14 @@ const Dashboard: React.FC = () => {
       };
     });
     setEvents(calendarEvents);
+    setSelectData(events)
+    console.log('trigger')
   }, [allBookings, allRooms, roomColors]);
   
   const handleSelectEvent = (event: CalendarEvent) => {
+    
     setSelectedEvent(event);
+    setShowEventDetails(true)
     const booking = allBookings.find(b => b.id === event.id);
     if (booking) {
       setSelectedBooking(booking);
@@ -83,21 +89,40 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
+    console.log(slotInfo)
     setInitialDate(slotInfo.start);
     setInitialEndDate(slotInfo.end);
     setShowBookingForm(true);
   };
 
-  const handleSelectRoom = (room: Room) => {
-    setSelectedRoom(room);
-    setShowBookingForm(true);
-    setShowRoomList(false); // Close room list on mobile after selection
-  };
+  const handleSelectRoomId = (roomId:any) => {
+    // console.log(roomId)
+    setSelectedFilterRoom(roomId)
+  }
+  
+const handleSelectRoom = (room: Room) => {
+  setShowBookingForm(false);
+  setShowRoomList(false);
 
+  // ถ้าห้องที่คลิกซ้ำ == ห้องที่เลือกอยู่
+  if (selectedRoom && selectedRoom.id === room.id) {
+    // ยกเลิกการเลือกห้อง
+    setSelectedRoom(undefined); 
+    setSelectData(events); // แสดง event ทั้งหมด
+  } else {
+    // เปลี่ยนห้องใหม่
+    setSelectedRoom(room);
+
+    // แสดง event เฉพาะของห้องนี้
+    const filtered = events.filter((event) => event.roomId === room.id);
+    setSelectData(filtered);
+  }
+};
+ 
   const handleCreateBooking = (booking: Partial<Booking>) => {
     const newBooking: Booking = {
       id: `booking_${Date.now()}`,
-      roomId: booking.roomId || '',
+      roomId: selectedRoom?.id || '',
       title: booking.title || 'Untitled Meeting',
       start: booking.start || new Date(),
       end: booking.end || new Date(),
@@ -118,6 +143,7 @@ const Dashboard: React.FC = () => {
     setShowBookingForm(true);
     setInitialDate(booking.start);
     setInitialEndDate(booking.end);
+    setShowEventDetails(false)
     const room = allRooms.find(r => r.id === booking.roomId);
     if (room) {
       setSelectedRoom(room);
@@ -131,8 +157,9 @@ const Dashboard: React.FC = () => {
   };
 
   const handleCloseEventDetails = () => {
-    setSelectedEvent(undefined);
-    setSelectedBooking(undefined);
+    // setSelectedEvent(undefined);
+    // setSelectedBooking(undefined);
+    setShowEventDetails(false)
   };
 
   const roomsWithColor = allRooms.map(room => ({
@@ -156,9 +183,10 @@ const Dashboard: React.FC = () => {
           {/* Calendar View - Hidden on mobile when room list is shown */}
           <div className={`${showRoomList ? 'hidden' : 'block'} lg:block lg:w-3/4 h-[calc(100vh-12rem)] lg:h-auto`}>
             <CalendarView 
-              events={events}
+              events={selectData}
               onSelectEvent={handleSelectEvent}
               onSelectSlot={handleSelectSlot}
+              onSelectRoomId={handleSelectRoomId}
             />
           </div>
           
@@ -193,7 +221,7 @@ const Dashboard: React.FC = () => {
                   setShowBookingForm(false);
                   setInitialDate(undefined);
                   setInitialEndDate(undefined);
-                  setSelectedRoom(undefined);
+                  // setSelectedRoom(undefined);
                 }}
               />
             </div>
@@ -202,11 +230,11 @@ const Dashboard: React.FC = () => {
       )}
       
       {/* Event Details Modal */}
-      {selectedEvent && selectedBooking && (
+      {selectedEvent && selectedBooking && showEventDetails && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={handleCloseEventDetails}></div>
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
             
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>

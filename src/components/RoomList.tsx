@@ -9,7 +9,7 @@ interface RoomListProps {
 }
 
 const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId }) => {
-
+  console.log(selectedRoomId)
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-200">
