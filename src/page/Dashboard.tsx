@@ -4,7 +4,7 @@ import { rooms, bookings } from '../data/dummyData';
 import Layout from '../components/Layout';
 import CalendarView from '../components/CalendarView';
 import RoomList from '../components/RoomList';
-import BookingForm from '../components/BookingForm';
+import BookingForm from '../components/form/BookingForm';
 import EventDetails from '../components/EventDetails';
 import MobileMenu from '../components/MobileMenu';
 
@@ -22,7 +22,7 @@ const Dashboard: React.FC = () => {
   const [initialEndDate, setInitialEndDate] = useState<Date | undefined>(undefined);
   const [showRoomList, setShowRoomList] = useState(false);
   const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
-  const [selectedFilterRoom,setSelectedFilterRoom] = useState<any>()
+  const [selectedEditRoom,setSelectedEditRoom] = useState<any>()
   const generateShuffledColors = () => {
     const colors = [
       '#EF4444', // Red-500
@@ -70,7 +70,7 @@ const Dashboard: React.FC = () => {
       };
     });
     setEvents(calendarEvents);
-    setSelectData(events)
+    setSelectData(calendarEvents)
     console.log('trigger')
   }, [allBookings, allRooms, roomColors]);
   
@@ -81,10 +81,10 @@ const Dashboard: React.FC = () => {
     const booking = allBookings.find(b => b.id === event.id);
     if (booking) {
       setSelectedBooking(booking);
-      const room = allRooms.find(r => r.id === booking.roomId);
-      if (room) {
-        setSelectedRoom(room);
-      }
+      // const room = allRooms.find(r => r.id === booking.roomId);
+      // if (room) {
+      //   setSelectedRoom(room);
+      // }
     }
   };
 
@@ -95,10 +95,6 @@ const Dashboard: React.FC = () => {
     setShowBookingForm(true);
   };
 
-  const handleSelectRoomId = (roomId:any) => {
-    // console.log(roomId)
-    setSelectedFilterRoom(roomId)
-  }
   
 const handleSelectRoom = (room: Room) => {
   setShowBookingForm(false);
@@ -146,7 +142,7 @@ const handleSelectRoom = (room: Room) => {
     setShowEventDetails(false)
     const room = allRooms.find(r => r.id === booking.roomId);
     if (room) {
-      setSelectedRoom(room);
+      setSelectedEditRoom(room);
     }
   };
 
@@ -186,7 +182,6 @@ const handleSelectRoom = (room: Room) => {
               events={selectData}
               onSelectEvent={handleSelectEvent}
               onSelectSlot={handleSelectSlot}
-              onSelectRoomId={handleSelectRoomId}
             />
           </div>
           
@@ -213,7 +208,7 @@ const handleSelectRoom = (room: Room) => {
             
             <div className="inline-block align-bottom sm:align-middle sm:max-w-lg sm:w-full w-full max-w-md my-8 overflow-hidden text-left transform transition-all">
               <BookingForm 
-                room={selectedRoom}
+                room={selectedEditRoom}
                 initialDate={initialDate}
                 initialEndDate={initialEndDate}
                 onSubmit={handleCreateBooking}

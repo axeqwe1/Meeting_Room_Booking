@@ -11,7 +11,6 @@ interface CalendarViewProps {
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
   onSelectSlot: (slotInfo: any) => void;
-  onSelectRoomId : (roomId:any) => void;
 }
 
 const localizer: DateLocalizer = momentLocalizer(moment);
@@ -26,7 +25,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   events, 
   onSelectEvent, 
   onSelectSlot,
-  onSelectRoomId,
 }) => {
   const [view, setView] = useState<View>(Views.WORK_WEEK as View);
   const [date, setDate] = useState(new Date());
@@ -37,12 +35,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     ? events.filter(event => event.roomId === selectedRoomIdFilter)
     : events;
 
-    useEffect(() => {
-      const data = rooms.filter((item) => {
-        return item.id == selectedRoomIdFilter
-      })[0]
-      onSelectRoomId(data)
-    },[filteredEvents])
   // ประกาศรูปแบบที่ถูกต้อง
   const calendarFormats: Formats = {
     timeGutterFormat: 'HH:mm',
@@ -124,20 +116,6 @@ const eventStyleGetter = (event: any) => {
           <h2 className="text-lg font-semibold text-gray-800">
             {format(date, view === 'day' ? 'MMMM d, yyyy' : view === 'week' ? 'MMMM yyyy' : 'MMMM yyyy')}
           </h2>
-          <div className="mb-2">
-            <select
-              className="hover:cursor-pointer select select-primary"
-              value={selectedRoomIdFilter || ''}
-              onChange={e => setSelectedRoomIdFilter(e.target.value || undefined)}
-            >
-              <option value="">All Rooms</option>
-              {allRooms.map(room => (
-                <option key={room.id} value={room.id}>
-                  {room.name}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
         <div className="flex border border-gray-300 rounded-md overflow-hidden w-full sm:w-auto">
           <button 

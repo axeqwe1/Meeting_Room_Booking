@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Room, Booking } from '../types';
+import { Room, Booking } from '../../types';
 import { format } from 'date-fns';
 import { X, Users, Clock, CalendarDays } from 'lucide-react';
 
