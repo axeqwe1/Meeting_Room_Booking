@@ -71,7 +71,7 @@ export default function Login() {
               required
             />
           </div>
-          <button type="submit" className="mt-2 btn btn-primary w-full h-[5vh]">
+          <button type="submit" className="mt-2 btn btn-primary w-full h-[42px]">
             Login
           </button>
         </form>
