@@ -43,7 +43,7 @@ const Sidebar: React.FC = () => {
         {/* Collapse Toggle */}
         <div className="p-4 flex justify-end">
           <button
-            className="p-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors"
+            className="hover:cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors"
             onClick={() => setCollapsed(!collapsed)}
           >
             {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
