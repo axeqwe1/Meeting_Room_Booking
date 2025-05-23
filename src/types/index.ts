@@ -28,4 +28,12 @@ export interface CalendarEvent {
   roomName?: string;
 }
 
+export interface Room {
+  id: string;
+  name: string;
+  capacity: number;
+  location: string;
+  amenities: string[];
+  imageUrl: string;
+}
 export type View = 'day' | 'week' | 'month' | 'agenda';

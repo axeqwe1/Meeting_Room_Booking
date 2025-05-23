@@ -22,7 +22,7 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId
             className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${room.id === selectedRoomId ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
             onClick={() => onSelectRoom(room)}
           >
-            <div className="flex items-start space-x-4">
+            <div className="flex items-start space-x-6">
               <div className="flex-shrink-0 w-20 h-16 rounded-md overflow-hidden">
                 <img 
                   src={room.imageUrl} 
@@ -43,26 +43,28 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId
                   <MapPin className="h-4 w-4 mr-1" />
                   <span>{room.location}</span>
                 </div>
-              </div>
-              
-              <div className="ml-2">
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {room.amenities.slice(0, 2).map((amenity, index) => (
-                    <span 
-                      key={index}
-                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                    >
-                      <MonitorSmartphone className="h-3 w-3 mr-1" />
-                      {amenity}
-                    </span>
-                  ))}
-                  {room.amenities.length > 2 && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      +{room.amenities.length - 2}
-                    </span>
-                  )}
+
+                <div className="">
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {room.amenities.slice(0, 2).map((amenity, index) => (
+                      <span 
+                        key={index}
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                      >
+                        <MonitorSmartphone className="h-3 w-3 mr-1" />
+                        {amenity}
+                      </span>
+                    ))}
+                    {room.amenities.length > 2 && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        +{room.amenities.length - 2}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
+              
+
             </div>
           </div>
         ))}

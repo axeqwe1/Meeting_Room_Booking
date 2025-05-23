@@ -25,7 +25,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   onSelectEvent, 
   onSelectSlot 
 }) => {
-  const [view, setView] = useState<View>(Views.WEEK as View);
+  const [view, setView] = useState<View>(Views.WORK_WEEK as View);
   const [date, setDate] = useState(new Date());
 // ประกาศรูปแบบที่ถูกต้อง
 const calendarFormats: Formats = {
@@ -74,7 +74,7 @@ const calendarFormats: Formats = {
 
 
   const {defaultDate} = useMemo(() => ({
-  defaultDate: new Date()
+    defaultDate: new Date()
   }), [])
   const onView = useCallback((newView:View) => setView(newView), [setView])
   return (
@@ -127,7 +127,7 @@ const calendarFormats: Formats = {
       </div>
       
       <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
-        <div className="h-full">
+        <div className="h-full calendar-container">
           <Calendar
             localizer={localizer}
             events={events}
@@ -144,7 +144,7 @@ const calendarFormats: Formats = {
             date={date}
             onNavigate={(newDate:Date) => setDate(newDate)}
             defaultDate={defaultDate}
-            defaultView='week'
+            defaultView={window.innerWidth < 768 ? 'day' : 'work_week'}
             onView={onView}
             onSelectEvent={onSelectEvent}
             onSelectSlot={onSelectSlot}
@@ -158,6 +158,13 @@ const calendarFormats: Formats = {
             // ตั้งค่าช่วงเวลาที่แสดงในแต่ละช่อง (30 นาที)
             timeslots={2} // 2 = 30 นาที (60/2)
             formats={calendarFormats}
+            components={{
+              event: (props) => (
+                <div className="p-1 text-sm truncate">
+                  {props.title}
+                </div>
+              )
+            }}
           />
         </div>
       </div>

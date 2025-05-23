@@ -1,8 +1,11 @@
 import React from 'react';
 import { Calendar, User, Bell, Menu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import MobileMenu from './MobileMenu';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -10,11 +13,14 @@ const Header: React.FC = () => {
         <div className="flex items-center">
           <button 
             className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => setIsMenuOpen(true)}
           >
             <Menu className="h-6 w-6" />
           </button>
-          <div className="flex items-center">
+          <div 
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate('/dashboard')}
+          >
             <Calendar className="h-8 w-8 text-blue-500 mr-2" />
             <h1 className="text-xl font-semibold text-gray-800">RoomBooker</h1>
           </div>
@@ -32,6 +38,8 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </header>
   );
 };
