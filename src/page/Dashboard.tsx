@@ -78,18 +78,20 @@ const Dashboard: React.FC = () => {
     console.log('trigger')
   }, [allBookings, allRooms, roomColors]);
   
-  const handleSelectEvent = (event: CalendarEvent) => {
-    
-    setSelectedEvent(event);
-    setShowEventDetails(true)
-    const booking = allBookings.find(b => b.id === event.id);
-    if (booking) {
-      setSelectedBooking(booking);
-      // const room = allRooms.find(r => r.id === booking.roomId);
-      // if (room) {
-      //   setSelectedRoom(room);
-      // }
+  const handleSelectEvent = (event: CalendarEvent,view:string) => {
+    if(view != 'month'){
+      setSelectedEvent(event);
+      setShowEventDetails(true)
+      const booking = allBookings.find(b => b.id === event.id);
+      if (booking) {
+        setSelectedBooking(booking);
+        // const room = allRooms.find(r => r.id === booking.roomId);
+        // if (room) {
+        //   setSelectedRoom(room);
+        // }
+      }
     }
+
   };
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date; action:string }, view:string) => {
@@ -97,7 +99,7 @@ const Dashboard: React.FC = () => {
     console.log(view)
     console.log(selectedRoom)
     if(view != 'month'){
-        if(selectedRoom == null){
+      if(selectedRoom == null){
         showAlert({
           title: 'Warning',
           message: 'Please Select Room for Booking',
@@ -106,19 +108,40 @@ const Dashboard: React.FC = () => {
           iconSize: 80
         });
         return;
-    }
+      }
     setInitialDate(slotInfo.start);
     setInitialEndDate(slotInfo.end);
     setShowBookingForm(true);
     }
     else if(slotInfo.action == 'select' && view == 'month'){
+      if(selectedRoom == null){
+        showAlert({
+          title: 'Warning',
+          message: 'Please Select Room for Booking',
+          icon: CircleAlert,
+          iconColor: 'text-yellow-500',
+          iconSize: 80
+        });
+        return;
+      }
       setInitialDate(slotInfo.start);
       setInitialEndDate(slotInfo.end);
       setShowBookingForm(true);
     }
     else{
+      if(selectedRoom == null){
+        showAlert({
+          title: 'Warning',
+          message: 'Please Select Room for Booking',
+          icon: CircleAlert,
+          iconColor: 'text-yellow-500',
+          iconSize: 80
+        });
+        return;
+      }
       setInitialDate(slotInfo.start);
       setInitialEndDate(slotInfo.end);
+      setShowBookingForm(true);
     }
   };
   

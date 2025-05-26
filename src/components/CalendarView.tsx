@@ -10,7 +10,7 @@ import CustomAlert from './CustomeAlert';
 // import CustomWeekWithoutSunday from '../data/CustomWeekView';
 interface CalendarViewProps {
   events: CalendarEvent[];
-  onSelectEvent: (event: CalendarEvent) => void;
+  onSelectEvent: (event: CalendarEvent, view:string) => void;
   onSelectSlot: (slotInfo: any, view:string) => void;
 }
 
@@ -94,6 +94,7 @@ const eventStyleGetter = (event: any) => {
       padding: '4px',
       opacity: 1 ,
       transition: 'all 0.2s',
+      pointerEvents: view === 'month' ? 'none' as const : 'auto' as const,
     },
   };
 };
@@ -197,7 +198,9 @@ const eventStyleGetter = (event: any) => {
             defaultDate={defaultDate}
             defaultView={window.innerWidth < 768 ? 'day' : 'work_week'}
             onView={onView}
-            onSelectEvent={onSelectEvent}
+            onSelectEvent={(event) => {
+              onSelectEvent(event,view)
+            }}
             onSelectSlot={handleSelectSlotFromMonth}
             selectable
             eventPropGetter={eventStyleGetter}
@@ -220,7 +223,7 @@ const eventStyleGetter = (event: any) => {
         </div>
       </div>
 
-            {showDayModal && selectedDate && (
+      {showDayModal && selectedDate && (
         <div className="fixed inset-0 z-39 overflow-y-auto animate-fadeIn">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
@@ -261,7 +264,11 @@ const eventStyleGetter = (event: any) => {
                     max={new Date(0, 0, 0, 19, 0, 0)}
                     // ตั้งค่าช่วงเวลาที่แสดงในแต่ละช่อง (30 นาที)
                     timeslots={2} // 2 = 30 นาที (60/2)
-                    onSelectEvent={onSelectEvent}
+                    onSelectEvent={(event) => {
+                      if(view == 'month')
+                      onSelectEvent(event,view)
+                      
+                    }}
                     onSelectSlot={(slot) => {onSelectSlot(slot,view)}}
                     selectable
                     eventPropGetter={eventStyleGetter}
