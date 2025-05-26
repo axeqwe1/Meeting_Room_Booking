@@ -7,11 +7,13 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { rooms, bookings } from '../data/dummyData';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import CustomAlert from './CustomeAlert';
+import { useScrollLock } from "../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
 // import CustomWeekWithoutSunday from '../data/CustomWeekView';
 interface CalendarViewProps {
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent, view:string) => void;
   onSelectSlot: (slotInfo: any, view:string) => void;
+  onClear: () => void
 }
 
 const localizer: DateLocalizer = momentLocalizer(moment);
@@ -26,7 +28,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   events, 
   onSelectEvent, 
   onSelectSlot,
+  onClear,
 }) => {
+  useScrollLock()
   const [view, setView] = useState<View>(Views.WORK_WEEK as View);
   const [date, setDate] = useState(new Date());
   const [selectedRoomIdFilter, setSelectedRoomIdFilter] = useState<string | undefined>(undefined);
@@ -129,7 +133,10 @@ const eventStyleGetter = (event: any) => {
         )} */}
         <div className="flex items-center space-x-2">
           <button 
-            onClick={() => handleNavigate('TODAY')}
+            onClick={() => {
+              handleNavigate('TODAY')
+              onClear()
+            }}
             className="hover:cursor-pointer px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
             Today
@@ -223,70 +230,68 @@ const eventStyleGetter = (event: any) => {
         </div>
       </div>
 
-      {showDayModal && selectedDate && (
-        <div className="fixed inset-0 z-39 overflow-y-auto animate-fadeIn">
-          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
+  {showDayModal && selectedDate && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    {/* Modal container */}
+    <div className="relative w-full max-w-4xl mx-4 bg-white rounded-lg shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
+      
+      {/* Close button */}
+      <div className="absolute top-0 right-0 pt-4 pr-4 z-10">
+        <button
+          onClick={() => setShowDayModal(false)}
+          className="text-gray-400 hover:text-gray-500"
+        >
+          <X className="h-6 w-6" />
+        </button>
+      </div>
 
-            <div className="relative inline-block w-full max-w-4xl bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all">
-              <div className="absolute top-0 right-0 pt-4 pr-4">
-                <button
-                  onClick={() => setShowDayModal(false)}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
+      {/* Modal header */}
+      <div className="p-4 pb-0 border-b border-gray-200">
+        <h3 className="text-lg font-medium leading-6 text-gray-900">
+          {format(selectedDate, 'MMMM d, yyyy')}
+        </h3>
+      </div>
 
-              <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                  {format(selectedDate, 'MMMM d, yyyy')}
-                </h3>
-
-                <div className="mt-2 h-[600px]">
-                  <Calendar
-                    localizer={localizer}
-                    events={getDayEvents(selectedDate)}
-                    startAccessor="start"
-                    endAccessor="end"
-                    style={{ height: '100%' }}
-                    view={'day'}
-                    onView={onView}
-                    date={selectedDate}
-                    onNavigate={(newDate:Date) => setDate(newDate)}
-                    defaultDate={selectedDate}
-                    defaultView={'day'}
-                    // ตั้งค่าเวลาเริ่มต้น (8:00 น.)
-                    min={new Date(0, 0, 0, 8, 0, 0)}
-                    // ตั้งค่าเวลาสิ้นสุด (19:00 น.)
-                    max={new Date(0, 0, 0, 19, 0, 0)}
-                    // ตั้งค่าช่วงเวลาที่แสดงในแต่ละช่อง (30 นาที)
-                    timeslots={2} // 2 = 30 นาที (60/2)
-                    onSelectEvent={(event) => {
-                      if(view == 'month')
-                      onSelectEvent(event,view)
-                      
-                    }}
-                    onSelectSlot={(slot) => {onSelectSlot(slot,view)}}
-                    selectable
-                    eventPropGetter={eventStyleGetter}
-                    toolbar={false}
-                    components={{
-                      event: (props) => (
-                        <div className="p-1 text-sm truncate">
-                          {props.title}
-                        </div>
-                      )
-                    }}
-                  />
+      {/* Calendar content */}
+      <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(90vh - 64px)" }}>
+        <div className="h-[600px]">
+          <Calendar
+            localizer={localizer}
+            events={getDayEvents(selectedDate)}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ height: "100%" }}
+            view={'day'}
+            onView={onView}
+            date={selectedDate}
+            onNavigate={(newDate: Date) => setDate(newDate)}
+            defaultDate={selectedDate}
+            defaultView={'day'}
+            min={new Date(0, 0, 0, 8, 0, 0)}
+            max={new Date(0, 0, 0, 19, 0, 0)}
+            timeslots={2}
+            onSelectEvent={(event) => {
+              if (view == 'month') onSelectEvent(event, view);
+            }}
+            onSelectSlot={(slot) => {
+              onSelectSlot(slot, view);
+            }}
+            selectable
+            eventPropGetter={eventStyleGetter}
+            toolbar={false}
+            components={{
+              event: (props) => (
+                <div className="p-1 text-sm truncate">
+                  {props.title}
                 </div>
-              </div>
-            </div>
-          </div>
+              ),
+            }}
+          />
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
 
     </div>
   );

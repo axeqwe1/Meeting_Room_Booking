@@ -2,6 +2,7 @@ import React from 'react';
 import { Booking, Room } from '../types';
 import { format } from 'date-fns';
 import { X, Calendar, Clock, Users, MapPin } from 'lucide-react';
+import { useScrollLock } from "../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
 
 interface EventDetailsProps {
   booking: Booking;
@@ -18,6 +19,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   onEdit,
   onDelete
 }) => {
+  useScrollLock()
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-fadeIn">
       <div className="px-6 py-4 bg-blue-500 text-white flex justify-between items-center">

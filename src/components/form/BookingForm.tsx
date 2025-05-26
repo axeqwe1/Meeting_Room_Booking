@@ -7,7 +7,7 @@ import { resolve } from 'path';
 import { rejects } from 'assert';
 import CustomAlert from '../CustomeAlert';
 import { useAlert } from '../../context/AlertContext';
-
+import { useScrollLock } from "../../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
 interface BookingFormProps {
   room?: Room;
   initialDate?: Date;
@@ -27,7 +27,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   onSubmit,
   onCancel
 }) => {
-
+  useScrollLock()
   const [booking, setBooking] = useState<Partial<Booking>>({
     id:'',
     roomId: room?.id,

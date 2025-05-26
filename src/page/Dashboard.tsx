@@ -214,6 +214,15 @@ const handleSelectRoom = (room: Room) => {
     }
   };
 
+  const clearData = () => {
+      setInitialDate(undefined);
+      setInitialEndDate(undefined);
+      setSelectedRoom(undefined);
+      setSelectedBooking(undefined);
+      setSelectedEditRoom(undefined);
+      setSelectedRoom(undefined); 
+      setSelectData(events); // แสดง event ทั้งหมด
+  }
   const handleEditBooking = (booking: Booking) => {
     setSelectedBooking(booking);
     setShowBookingForm(true);
@@ -266,6 +275,7 @@ const handleSelectRoom = (room: Room) => {
           <div className={`${showRoomList ? 'hidden' : 'block'} lg:block lg:w-3/4 h-[calc(100vh-12rem)] lg:h-auto`}>
             <CalendarView 
               events={selectData}
+              onClear={clearData}
               onSelectEvent={handleSelectEvent}
               onSelectSlot={handleSelectSlot}
             />

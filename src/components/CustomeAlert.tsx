@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM, { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, AlertTriangle, CircleAlert, LucideIcon } from "lucide-react";
+import { useScrollLock } from "../hook/useScrollLock.tsx"; // อ้างอิง path ตามโครงสร้างของคุณ
 
 type CustomAlertProps = {
   title?: string;
@@ -30,6 +31,7 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
   iconColor = "text-blue-500", // ค่าเริ่มต้นสีน้ำเงิน
   iconSize = 90, // ค่าเริ่มต้นขนาด 90px
 }) => {
+  useScrollLock()
   // ฟังก์ชันแสดง icon
   const renderIcon = () => {
     if (icon) {

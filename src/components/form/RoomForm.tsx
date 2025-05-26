@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Room } from '../../types/index';
 import { X, Plus } from 'lucide-react';
-
+import { useScrollLock } from "../../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
 interface RoomFormProps {
   room?: Room;
   onSubmit: (room: Room) => void;
@@ -9,6 +9,7 @@ interface RoomFormProps {
 }
 
 const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
+  useScrollLock()
   const [formData, setFormData] = useState<Partial<Room>>({
     id: room?.id || '',
     name: room?.name || '',
