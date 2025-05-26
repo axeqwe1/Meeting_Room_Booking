@@ -57,7 +57,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     else{
       setBooking({
         id:'',
-        roomId: room?.id,
+        roomId: SelectedRoom?.id,
         start: initialDate,
         end: initialEndDate || (initialDate ? new Date(initialDate.getTime() + 60 * 60 * 1000) : undefined),
         description: '',
@@ -65,6 +65,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         title: '',
       })
     }
+    console.log(booking)
   },[])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,7 +179,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
           <X className="h-5 w-5" />
         </button>
       </div>
-      {room && (
+      {room && !SelectedRoom &&(
         <div className="px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center">
           <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden mr-3">
             <img 
@@ -196,7 +197,25 @@ const BookingForm: React.FC<BookingFormProps> = ({
           </div>
         </div>
       )}
-      
+      {SelectedRoom && (
+        <div className="px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center">
+          <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden mr-3">
+            <img 
+              src={SelectedRoom.imageUrl} 
+              alt={SelectedRoom.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-800">{SelectedRoom.name}</h4>
+            <div className="flex items-center text-sm text-gray-600">
+              <Users className="h-4 w-4 mr-1" />
+              <span>Capacity: {SelectedRoom.capacity}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="p-6">
         <div className="space-y-4">
           <div>

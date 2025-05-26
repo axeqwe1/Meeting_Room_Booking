@@ -92,8 +92,12 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
-    if(selectedRoom == null){
+  const handleSelectSlot = (slotInfo: { start: Date; end: Date; action:string }, view:string) => {
+    console.log(slotInfo)
+    console.log(view)
+    console.log(selectedRoom)
+    if(view != 'month'){
+        if(selectedRoom == null){
         showAlert({
           title: 'Warning',
           message: 'Please Select Room for Booking',
@@ -106,8 +110,17 @@ const Dashboard: React.FC = () => {
     setInitialDate(slotInfo.start);
     setInitialEndDate(slotInfo.end);
     setShowBookingForm(true);
+    }
+    else if(slotInfo.action == 'select' && view == 'month'){
+      setInitialDate(slotInfo.start);
+      setInitialEndDate(slotInfo.end);
+      setShowBookingForm(true);
+    }
+    else{
+      setInitialDate(slotInfo.start);
+      setInitialEndDate(slotInfo.end);
+    }
   };
-
   
 const handleSelectRoom = (room: Room) => {
   setShowBookingForm(false);
@@ -268,7 +281,7 @@ const handleSelectRoom = (room: Room) => {
                     setShowBookingForm(false);
                     setInitialDate(undefined);
                     setInitialEndDate(undefined);
-                    setSelectedRoom(undefined);
+                    // setSelectedRoom(undefined);
                     setSelectedBooking(undefined);
                     setSelectedEditRoom(undefined);
                   // setSelectedRoom(undefined);

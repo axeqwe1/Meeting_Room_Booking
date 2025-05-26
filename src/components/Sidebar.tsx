@@ -35,7 +35,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`sm:relative sm:block hidden z-40 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
+      className={`sm:relative sm:block hidden z-20 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >

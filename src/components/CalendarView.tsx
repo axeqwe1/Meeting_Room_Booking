@@ -3,7 +3,7 @@ import { Calendar, Views, momentLocalizer, View, DateLocalizer, Formats } from '
 import moment from 'moment';
 import { format } from 'date-fns';
 import { CalendarEvent, Room } from '../types';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { rooms, bookings } from '../data/dummyData';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import CustomAlert from './CustomeAlert';
@@ -11,7 +11,7 @@ import CustomAlert from './CustomeAlert';
 interface CalendarViewProps {
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
-  onSelectSlot: (slotInfo: any) => void;
+  onSelectSlot: (slotInfo: any, view:string) => void;
 }
 
 const localizer: DateLocalizer = momentLocalizer(moment);
@@ -30,6 +30,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [view, setView] = useState<View>(Views.WORK_WEEK as View);
   const [date, setDate] = useState(new Date());
   const [selectedRoomIdFilter, setSelectedRoomIdFilter] = useState<string | undefined>(undefined);
+  const [showDayModal, setShowDayModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [allRooms] = useState<Room[]>(rooms);
 
   const filteredEvents = selectedRoomIdFilter
@@ -71,6 +73,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     setDate(newDate);
   };
 
+  const handleSelectSlotFromMonth = (slotInfo: { start: Date; end: Date; action:string }) => {
+    if (view === 'month' && slotInfo.action != 'select') {
+      setSelectedDate(slotInfo.start);
+      setShowDayModal(true);
+    } else {
+      onSelectSlot(slotInfo,view);
+    }
+  };
+
 const eventStyleGetter = (event: any) => {
   const baseColor = event.color
 
@@ -92,6 +103,16 @@ const eventStyleGetter = (event: any) => {
     defaultDate: new Date()
   }), [])
 
+  const getDayEvents = (date: Date) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.start);
+      return (
+        eventDate.getDate() === date.getDate() &&
+        eventDate.getMonth() === date.getMonth() &&
+        eventDate.getFullYear() === date.getFullYear()
+      );
+    });
+  };
   const [isShowAlert,setIsShowAlert] = useState<boolean>(false)
   const onView = useCallback((newView:View) => setView(newView), [setView])
   return (
@@ -177,7 +198,7 @@ const eventStyleGetter = (event: any) => {
             defaultView={window.innerWidth < 768 ? 'day' : 'work_week'}
             onView={onView}
             onSelectEvent={onSelectEvent}
-            onSelectSlot={onSelectSlot}
+            onSelectSlot={handleSelectSlotFromMonth}
             selectable
             eventPropGetter={eventStyleGetter}
             toolbar={false}
@@ -198,6 +219,68 @@ const eventStyleGetter = (event: any) => {
           />
         </div>
       </div>
+
+            {showDayModal && selectedDate && (
+        <div className="fixed inset-0 z-39 overflow-y-auto animate-fadeIn">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <div className="relative inline-block w-full max-w-4xl bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all">
+              <div className="absolute top-0 right-0 pt-4 pr-4">
+                <button
+                  onClick={() => setShowDayModal(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="mt-3 text-center sm:mt-0 sm:text-left">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                  {format(selectedDate, 'MMMM d, yyyy')}
+                </h3>
+
+                <div className="mt-2 h-[600px]">
+                  <Calendar
+                    localizer={localizer}
+                    events={getDayEvents(selectedDate)}
+                    startAccessor="start"
+                    endAccessor="end"
+                    style={{ height: '100%' }}
+                    view={'day'}
+                    onView={onView}
+                    date={selectedDate}
+                    onNavigate={(newDate:Date) => setDate(newDate)}
+                    defaultDate={selectedDate}
+                    defaultView={'day'}
+                    // ตั้งค่าเวลาเริ่มต้น (8:00 น.)
+                    min={new Date(0, 0, 0, 8, 0, 0)}
+                    // ตั้งค่าเวลาสิ้นสุด (19:00 น.)
+                    max={new Date(0, 0, 0, 19, 0, 0)}
+                    // ตั้งค่าช่วงเวลาที่แสดงในแต่ละช่อง (30 นาที)
+                    timeslots={2} // 2 = 30 นาที (60/2)
+                    onSelectEvent={onSelectEvent}
+                    onSelectSlot={(slot) => {onSelectSlot(slot,view)}}
+                    selectable
+                    eventPropGetter={eventStyleGetter}
+                    toolbar={false}
+                    components={{
+                      event: (props) => (
+                        <div className="p-1 text-sm truncate">
+                          {props.title}
+                        </div>
+                      )
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
