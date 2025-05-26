@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Room, Booking } from '../../types';
+import { bookings } from '../../data/dummyData';
 import { format } from 'date-fns';
-import { X, Users, Clock, CalendarDays } from 'lucide-react';
+import { X, Users, Clock, CalendarDays, CircleCheck, CircleOff } from 'lucide-react';
+import { resolve } from 'path';
+import { rejects } from 'assert';
+import CustomAlert from '../CustomeAlert';
+import { useAlert } from '../../context/AlertContext';
 
 interface BookingFormProps {
   room?: Room;
   initialDate?: Date;
   initialEndDate?: Date;
+  SelectedRoom?: Room;
+  BookingData?: Booking;
   onSubmit: (booking: Partial<Booking>) => void;
   onCancel: () => void;
 }
@@ -15,10 +22,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
   room,
   initialDate,
   initialEndDate,
+  SelectedRoom,
+  BookingData,
   onSubmit,
   onCancel
 }) => {
+
   const [booking, setBooking] = useState<Partial<Booking>>({
+    id:'',
     roomId: room?.id,
     title: '',
     description: '',
@@ -27,11 +38,61 @@ const BookingForm: React.FC<BookingFormProps> = ({
     attendees: []
   });
 
+  const {showAlert} = useAlert();
+  const [validationAlert,setValidationAlert] = useState<boolean>(false);
   const [attendeeInput, setAttendeeInput] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if(BookingData != null){
+      setBooking({
+        id:BookingData.id,
+        roomId:BookingData.roomId,
+        start:BookingData.start,
+        end:BookingData.end,
+        description:BookingData.description,
+        attendees:BookingData.attendees,
+        title:BookingData.title
+      })
+    }
+    else{
+      setBooking({
+        id:'',
+        roomId: room?.id,
+        start: initialDate,
+        end: initialEndDate || (initialDate ? new Date(initialDate.getTime() + 60 * 60 * 1000) : undefined),
+        description: '',
+        attendees: [],
+        title: '',
+      })
+    }
+  },[])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(booking);
+    if(BookingData != null){
+      console.log(booking)
+      onSubmit(booking);
+    }else{
+      const isValid =  await validation()
+      setValidationAlert(isValid.success)
+      if(isValid.success){
+        showAlert({
+          title: 'Success',
+          message: isValid.message,
+          icon: CircleCheck,
+          iconColor: 'text-green-500',
+          iconSize: 80
+        });
+      }else{
+        showAlert({
+          title: 'Failed',
+          message: isValid.message,
+          icon: CircleOff,
+          iconColor: 'text-red-500',
+          iconSize: 80
+        });
+      }
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -61,6 +122,51 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }));
   };
 
+  const validation = ():Promise<{success:boolean; message:string}> => {
+    return new Promise((resolve,reject) => {
+      try{
+      const iniStartDate = booking.start
+      const iniEndDate = booking.end
+      if(SelectedRoom == null){
+        resolve({ 
+          success: false, 
+          message: "Please select a room before proceeding with your booking." 
+        });
+        return;
+      }
+      const bookData = bookings.filter((item) => item.roomId == SelectedRoom?.id)
+      console.log(booking)
+      // ตรวจสอบการซ้อนทับของช่วงเวลา
+      if(bookData != null && iniStartDate != null && iniEndDate != null){
+        const isOverlapping = bookData.some((booking) => {
+          return (
+            (iniStartDate >= booking.start && iniStartDate < booking.end) || // เริ่มในช่วงที่จองแล้ว
+            (iniEndDate > booking.start && iniEndDate <= booking.end) || // สิ้นสุดในช่วงที่จองแล้ว
+            (iniStartDate <= booking.start && iniEndDate >= booking.end) // ครอบคลุมช่วงที่จองแล้ว
+          );
+        });
+        
+        if (isOverlapping) {
+          resolve({ 
+            success: false, 
+            message: "This room is already booked for the selected time period. Please choose a different time slot" 
+          });
+          return;
+        }
+
+        onSubmit(booking);
+        // ถ้าไม่มีการซ้อนทับ
+        resolve({ 
+          success: true, 
+          message: "Booking Success" 
+        });
+      }
+      }catch(err:any){
+        reject(new Error(err))
+      }
+
+    })
+  }
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-fadeIn">
       <div className="px-6 py-4 bg-blue-500 text-white flex justify-between items-center">
@@ -72,7 +178,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
           <X className="h-5 w-5" />
         </button>
       </div>
-      
       {room && (
         <div className="px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center">
           <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden mr-3">

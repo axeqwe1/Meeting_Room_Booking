@@ -6,6 +6,7 @@ import { CalendarEvent, Room } from '../types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { rooms, bookings } from '../data/dummyData';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import CustomAlert from './CustomeAlert';
 // import CustomWeekWithoutSunday from '../data/CustomWeekView';
 interface CalendarViewProps {
   events: CalendarEvent[];
@@ -90,10 +91,20 @@ const eventStyleGetter = (event: any) => {
   const {defaultDate} = useMemo(() => ({
     defaultDate: new Date()
   }), [])
+
+  const [isShowAlert,setIsShowAlert] = useState<boolean>(false)
   const onView = useCallback((newView:View) => setView(newView), [setView])
   return (
     <div className="h-full flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-4">
+        {/* {isShowAlert && (
+          <CustomAlert
+            title='TEST'
+            message='for test'
+            mode='ok'
+            onConfirm={() => {setIsShowAlert(false)}}
+        />
+        )} */}
         <div className="flex items-center space-x-2">
           <button 
             onClick={() => handleNavigate('TODAY')}
@@ -101,6 +112,12 @@ const eventStyleGetter = (event: any) => {
           >
             Today
           </button>
+          <button 
+          onClick={() => {setIsShowAlert(true)}}
+          className='hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100'>
+              test
+          </button>
+          
           <button 
             onClick={() => handleNavigate('PREV')}
             className="hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100"

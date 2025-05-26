@@ -7,6 +7,9 @@ import RoomList from '../components/RoomList';
 import BookingForm from '../components/form/BookingForm';
 import EventDetails from '../components/EventDetails';
 import MobileMenu from '../components/MobileMenu';
+import { pre } from 'motion/react-client';
+import { useAlert } from '../context/AlertContext';
+import { CircleAlert } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const [allRooms] = useState<Room[]>(rooms);
@@ -23,6 +26,7 @@ const Dashboard: React.FC = () => {
   const [showRoomList, setShowRoomList] = useState(false);
   const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
   const [selectedEditRoom,setSelectedEditRoom] = useState<any>()
+  const {showAlert} = useAlert()
   const generateShuffledColors = () => {
     const colors = [
       '#EF4444', // Red-500
@@ -89,7 +93,16 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
-    console.log(slotInfo)
+    if(selectedRoom == null){
+        showAlert({
+          title: 'Warning',
+          message: 'Please Select Room for Booking',
+          icon: CircleAlert,
+          iconColor: 'text-yellow-500',
+          iconSize: 80
+        });
+        return;
+    }
     setInitialDate(slotInfo.start);
     setInitialEndDate(slotInfo.end);
     setShowBookingForm(true);
@@ -99,7 +112,6 @@ const Dashboard: React.FC = () => {
 const handleSelectRoom = (room: Room) => {
   setShowBookingForm(false);
   setShowRoomList(false);
-
   // ถ้าห้องที่คลิกซ้ำ == ห้องที่เลือกอยู่
   if (selectedRoom && selectedRoom.id === room.id) {
     // ยกเลิกการเลือกห้อง
@@ -108,7 +120,6 @@ const handleSelectRoom = (room: Room) => {
   } else {
     // เปลี่ยนห้องใหม่
     setSelectedRoom(room);
-
     // แสดง event เฉพาะของห้องนี้
     const filtered = events.filter((event) => event.roomId === room.id);
     setSelectData(filtered);
@@ -116,22 +127,55 @@ const handleSelectRoom = (room: Room) => {
 };
  
   const handleCreateBooking = (booking: Partial<Booking>) => {
-    const newBooking: Booking = {
-      id: `booking_${Date.now()}`,
-      roomId: selectedRoom?.id || '',
-      title: booking.title || 'Untitled Meeting',
-      start: booking.start || new Date(),
-      end: booking.end || new Date(),
-      userId: 'current_user',
-      description: booking.description,
-      attendees: booking.attendees
-    };
-    
-    setAllBookings([...allBookings, newBooking]);
-    setShowBookingForm(false);
-    setInitialDate(undefined);
-    setInitialEndDate(undefined);
-    setSelectedRoom(undefined);
+    if(booking.id != null && booking.id != ''){
+      console.log(booking)
+      setAllBookings((prev) => {
+        const excludeBookId = prev.filter((item) => item.id != booking.id)
+        const existBooking = prev.find((item) => item.id == booking.id)
+        if(existBooking != null){
+          existBooking.id = booking.id ? booking.id : 'null';
+          existBooking.roomId = booking.roomId ? booking.roomId : 'null';
+          existBooking.description = booking.description;
+          existBooking.attendees = booking.attendees;
+          existBooking.start = booking.start ? booking.start : new Date
+          existBooking.end = booking.end ? booking.end : new Date
+          existBooking.title = booking.title ? booking.title : 'null'
+          
+          return [...excludeBookId,existBooking]
+        }else{
+          return prev
+        }
+      });
+      setSelectedRoom(() => allRooms.find((item) => item.id == booking.roomId))
+      setTimeout(() => {
+        setShowBookingForm(false);
+        setInitialDate(undefined);
+        setInitialEndDate(undefined);
+        setSelectedRoom(undefined);
+        setSelectedBooking(undefined);
+        setSelectedEditRoom(undefined);
+      },100)
+    }else{
+      const newBooking: Booking = {
+        id: `booking_${Date.now()}`,
+        roomId: booking?.roomId || '',
+        title: booking.title || 'Untitled Meeting',
+        start: booking.start || new Date(),
+        end: booking.end || new Date(),
+        userId: 'current_user',
+        description: booking.description,
+        attendees: booking.attendees
+      };
+      setSelectedRoom(() => allRooms.find((item) => item.id == booking.roomId))
+      setAllBookings([...allBookings, newBooking]);
+      setTimeout(() => {
+        setShowBookingForm(false);
+        setInitialDate(undefined);
+        setInitialEndDate(undefined);
+        setSelectedRoom(undefined);
+        setSelectedEditRoom(undefined);
+      },100)
+    }
   };
 
   const handleEditBooking = (booking: Booking) => {
@@ -155,7 +199,13 @@ const handleSelectRoom = (room: Room) => {
   const handleCloseEventDetails = () => {
     // setSelectedEvent(undefined);
     // setSelectedBooking(undefined);
+    setShowBookingForm(false);
+    setInitialDate(undefined);
+    setInitialEndDate(undefined);
+    setSelectedRoom(undefined);
+    setSelectedBooking(undefined);
     setShowEventDetails(false)
+    setSelectedEditRoom(undefined);
   };
 
   const roomsWithColor = allRooms.map(room => ({
@@ -198,7 +248,7 @@ const handleSelectRoom = (room: Room) => {
       
       {/* Booking Form Modal */}
       {showBookingForm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-40 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
@@ -209,13 +259,18 @@ const handleSelectRoom = (room: Room) => {
             <div className="inline-block align-bottom sm:align-middle sm:max-w-lg sm:w-full w-full max-w-md my-8 overflow-hidden text-left transform transition-all">
               <BookingForm 
                 room={selectedEditRoom}
+                SelectedRoom={selectedRoom}
+                BookingData={selectedBooking}
                 initialDate={initialDate}
                 initialEndDate={initialEndDate}
                 onSubmit={handleCreateBooking}
                 onCancel={() => {
-                  setShowBookingForm(false);
-                  setInitialDate(undefined);
-                  setInitialEndDate(undefined);
+                    setShowBookingForm(false);
+                    setInitialDate(undefined);
+                    setInitialEndDate(undefined);
+                    setSelectedRoom(undefined);
+                    setSelectedBooking(undefined);
+                    setSelectedEditRoom(undefined);
                   // setSelectedRoom(undefined);
                 }}
               />
