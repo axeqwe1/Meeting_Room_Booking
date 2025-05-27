@@ -32,7 +32,8 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId
               </div>
               
               <div className="flex-1 min-w-0">
-                <h4 className="text-base font-semibold text-gray-800 truncate">{room.name} <span className='inline-block w-3 h-3 ml-2 rounded-full' style={{backgroundColor: room.color }}></span></h4>
+                
+                <h4 className="text-base font-semibold text-gray-800 truncate"><span className='inline-block w-3 h-3 mr-1 rounded-full' style={{backgroundColor: room.color }}></span> {room.name}</h4>
                 
                 <div className="mt-1 flex items-center text-sm text-gray-500">
                   <Users className="h-4 w-4 mr-1" />

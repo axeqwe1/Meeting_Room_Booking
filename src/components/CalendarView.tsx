@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { rooms, bookings } from '../data/dummyData';
 import CustomAlert from './CustomeAlert';
 import { useScrollLock } from "../hook/useScrollLock";
+import { EventContentArg } from '@fullcalendar/core/index.js';
 
 
 
@@ -61,6 +62,23 @@ const fullCalendarEvents = useMemo(() => {
     };
   });
 }, [events, selectedRoomIdFilter]);
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const highlights = document.querySelectorAll('.fc-highlight');
+
+      highlights.forEach((el) => {
+        (el as HTMLElement).style.backgroundColor = 'rgba(107, 114, 128, 0.3)';
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleViewChange = (newView: string) => {
     setView(newView);
@@ -244,7 +262,7 @@ const fullCalendarEvents = useMemo(() => {
             eventClick={handleEventClick}
             select={handleDateSelect}
             dateClick={handleDateClick}
-            
+
             // Touch settings สำหรับ mobile
             eventDisplay="block"
             dayMaxEvents={1}
@@ -270,11 +288,25 @@ const fullCalendarEvents = useMemo(() => {
             weekends={view !== 'timeGridWeek'}
             
             // Custom event rendering
-            eventContent={(eventInfo) => (
-              <div className="px-1 py-0.5 text-[12px] truncate leading-tight overflow-hidden">
-                {eventInfo.event.title}
-              </div>
-            )}
+            eventContent={(eventInfo:EventContentArg) => {
+              const start = eventInfo.event.start;
+              const end = eventInfo.event.end;
+              const test = eventInfo.event
+              console.log(test)
+              const timeFormat: Intl.DateTimeFormatOptions = {
+                day: '2-digit',      // แสดงเลขวัน เช่น 27
+                month: '2-digit',    // แสดงเลขเดือน เช่น 05
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
+              };
+
+              return (
+                  <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
+                     {start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)} {eventInfo.event.title}
+                  </div>
+              );
+            }}
             
             // View specific settings
             views={{
@@ -376,11 +408,24 @@ const fullCalendarEvents = useMemo(() => {
                   
                   height="100%"
                   
-                  eventContent={(eventInfo) => (
-                    <div className="p-1 text-sm truncate">
-                      {eventInfo.event.title}
-                    </div>
-                  )}
+                  eventContent={(eventInfo:EventContentArg) => {
+                    const start = eventInfo.event.start;
+                    const end = eventInfo.event.end;
+                    
+                    const timeFormat: Intl.DateTimeFormatOptions = {
+                      day: '2-digit',      // แสดงเลขวัน เช่น 27
+                      month: '2-digit',    // แสดงเลขเดือน เช่น 05
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
+                    };
+
+                    return (
+                        <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
+                           {start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)} {eventInfo.event.title}
+                        </div>
+                    );
+                  }}
                 />
             </div>
           </div>
