@@ -226,7 +226,7 @@ const fullCalendarEvents = useMemo(() => {
             initialDate={date}
             events={fullCalendarEvents}
             
-            longPressDelay={100}
+            longPressDelay={300}
             // Header settings
             headerToolbar={false}
             
@@ -363,7 +363,7 @@ const fullCalendarEvents = useMemo(() => {
                   slotMaxTime="19:00:00"
                   slotDuration="00:30:00"
                   selectable={true}
-                  longPressDelay={100}
+                  longPressDelay={300}
                   eventClick={handleEventClick}
                   select={(selectInfo) => {
                     const slotInfo = {
