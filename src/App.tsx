@@ -7,33 +7,36 @@ import Login from './page/login';
 import  Layout  from './components/Layout';
 import RoomManagement from './page/RoomManagement';
 import { AlertProvider } from './context/AlertContext';
+import { RoomProvider } from './context/RoomContext';
 
 
 function App() {
   return (
     <AuthProvider>
-      <AlertProvider>
-        <Routes>
-          {/* Public route */}
-          <Route path="/login" element={<Login />} />
+      <RoomProvider>
+        <AlertProvider>
+          <Routes>
+            {/* Public route */}
+            <Route path="/login" element={<Login />} />
 
-          {/* Protected routes with layout */}
-          <Route
-            path="/"
-            element={
-              <AuthGuard>
-                <Layout />
-              </AuthGuard>
-            }
-          >
-            {/* Nested routes under layout */}
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="rooms" element={<RoomManagement />} />
-            {/* <Route path="profile" element={<Profile />} /> */}
-          </Route>
-        </Routes>
-      </AlertProvider>
+            {/* Protected routes with layout */}
+            <Route
+              path="/"
+              element={
+                <AuthGuard>
+                  <Layout />
+                </AuthGuard>
+              }
+            >
+              {/* Nested routes under layout */}
+              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="rooms" element={<RoomManagement />} />
+              {/* <Route path="profile" element={<Profile />} /> */}
+            </Route>
+          </Routes>
+        </AlertProvider>
+      </RoomProvider>
     </AuthProvider>
   );
 }

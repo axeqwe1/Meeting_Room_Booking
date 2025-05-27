@@ -9,77 +9,39 @@ import EventDetails from '../components/EventDetails';
 import MobileMenu from '../components/MobileMenu';
 import { pre } from 'motion/react-client';
 import { useAlert } from '../context/AlertContext';
-import { CircleAlert } from 'lucide-react';
+import { CircleAlert, X } from 'lucide-react';
+import { useRoomContext  } from '../context/RoomContext';
 
 const Dashboard: React.FC = () => {
-  const [allRooms] = useState<Room[]>(rooms);
-  const [allBookings, setAllBookings] = useState<Booking[]>(bookings);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [selectData, setSelectData] = useState<CalendarEvent[]>([])
-  const [selectedRoom, setSelectedRoom] = useState<Room | undefined>(undefined);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | undefined>(undefined);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | undefined>(undefined);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [initialDate, setInitialDate] = useState<Date | undefined>(undefined);
   const [initialEndDate, setInitialEndDate] = useState<Date | undefined>(undefined);
   const [showRoomList, setShowRoomList] = useState(false);
-  const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
-  const [selectedEditRoom,setSelectedEditRoom] = useState<any>()
+  const [modalRoomlist,setModalRoomlist] = useState(false);
+  // const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
   const {showAlert} = useAlert()
-  const generateShuffledColors = () => {
-    const colors = [
-      '#EF4444', // Red-500
-      '#F59E0B', // Amber-500
-      '#10B981', // Emerald-500
-      '#3B82F6', // Blue-500
-      '#8B5CF6', // Violet-500
-      '#EC4899', // Pink-500
-      '#F97316', // Orange-500
-      '#14B8A6', // Teal-500
-    ];
-
-    // Fisher–Yates Shuffle
-    for (let i = colors.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [colors[i], colors[j]] = [colors[j], colors[i]];
-    }
-
-    return colors;
-  };
-
-  useEffect(() => {
-    const shuffledColors = generateShuffledColors();
-    const newColors: { [roomId: string]: string } = {};
-
-    allRooms.forEach((room, index) => {
-      newColors[room.id] = shuffledColors[index % shuffledColors.length]; // เผื่อห้อง > สี
-    });
-
-    setRoomColors(newColors);
-  }, [allRooms]);
-  // Convert bookings to calendar events
+    const {
+    allRooms,
+    allBookings,
+    setAllBookings,
+    events,
+    selectData,
+    setSelectData,
+    selectedRoom,
+    setSelectedRoom,
+    selectedBooking,
+    setSelectedBooking,
+    selectedEvent,
+    setSelectedEvent,
+    selectedEditRoom,
+    setSelectedEditRoom,
+    roomColors
+  } = useRoomContext();
   
-  useEffect(() => {
-    const calendarEvents = allBookings.map(booking => {
-      const room = allRooms.find(r => r.id === booking.roomId);
-      return {
-        id: booking.id,
-        title: booking.title,
-        start: booking.start,
-        end: booking.end,
-        roomId: booking.roomId,
-        roomName: room?.name,
-        color: roomColors[booking.roomId] || '#999999'
-      };
-    });
-    setEvents(calendarEvents);
-    setSelectData(calendarEvents)
-    console.log('trigger')
-  }, [allBookings, allRooms, roomColors]);
   
   const handleSelectEvent = (event: CalendarEvent,view:string) => {
-    if(view != 'month'){
+    // if(view != 'month'){
       setSelectedEvent(event);
       setShowEventDetails(true)
       const booking = allBookings.find(b => b.id === event.id);
@@ -90,11 +52,11 @@ const Dashboard: React.FC = () => {
         //   setSelectedRoom(room);
         // }
       }
-    }
+    // }
 
   };
 
-  const handleSelectSlot = (slotInfo: { start: Date; end: Date; action:string }, view:string) => {
+  const handleSelectSlot = (slotInfo: { start: Date; end: Date;  }, view:string) => {
     console.log(slotInfo)
     console.log(view)
     console.log(selectedRoom)
@@ -113,21 +75,21 @@ const Dashboard: React.FC = () => {
     setInitialEndDate(slotInfo.end);
     setShowBookingForm(true);
     }
-    else if(slotInfo.action == 'select' && view == 'month'){
-      if(selectedRoom == null){
-        showAlert({
-          title: 'Warning',
-          message: 'Please Select Room for Booking',
-          icon: CircleAlert,
-          iconColor: 'text-yellow-500',
-          iconSize: 80
-        });
-        return;
-      }
-      setInitialDate(slotInfo.start);
-      setInitialEndDate(slotInfo.end);
-      setShowBookingForm(true);
-    }
+    // else if(slotInfo.action == 'select' && view == 'month'){
+    //   if(selectedRoom == null){
+    //     showAlert({
+    //       title: 'Warning',
+    //       message: 'Please Select Room for Booking',
+    //       icon: CircleAlert,
+    //       iconColor: 'text-yellow-500',
+    //       iconSize: 80
+    //     });
+    //     return;
+    //   }
+    //   setInitialDate(slotInfo.start);
+    //   setInitialEndDate(slotInfo.end);
+    //   setShowBookingForm(true);
+    // }
     else{
       if(selectedRoom == null){
         showAlert({
@@ -145,23 +107,25 @@ const Dashboard: React.FC = () => {
     }
   };
   
-const handleSelectRoom = (room: Room) => {
-  setShowBookingForm(false);
-  setShowRoomList(false);
-  // ถ้าห้องที่คลิกซ้ำ == ห้องที่เลือกอยู่
-  if (selectedRoom && selectedRoom.id === room.id) {
-    // ยกเลิกการเลือกห้อง
-    setSelectedRoom(undefined); 
-    setSelectData(events); // แสดง event ทั้งหมด
-  } else {
-    // เปลี่ยนห้องใหม่
-    setSelectedRoom(room);
-    // แสดง event เฉพาะของห้องนี้
-    const filtered = events.filter((event) => event.roomId === room.id);
-    setSelectData(filtered);
-  }
-};
+  const handleSelectRoom = (room: Room) => {
+    setShowBookingForm(false);
+    setShowRoomList(false);
+    // ถ้าห้องที่คลิกซ้ำ == ห้องที่เลือกอยู่
+    if (selectedRoom && selectedRoom.id === room.id) {
+      // ยกเลิกการเลือกห้อง
+      setSelectedRoom(undefined); 
+      setSelectData(events); // แสดง event ทั้งหมด
+    } else {
+      // เปลี่ยนห้องใหม่
+      setSelectedRoom(room);
+      // แสดง event เฉพาะของห้องนี้
+      const filtered = events.filter((event) => event.roomId === room.id);
+      setSelectData(filtered);
+    }
+    setModalRoomlist(false)
+  };
  
+
   const handleCreateBooking = (booking: Partial<Booking>) => {
     if(booking.id != null && booking.id != ''){
       console.log(booking)
@@ -182,7 +146,7 @@ const handleSelectRoom = (room: Room) => {
           return prev
         }
       });
-      setSelectedRoom(() => allRooms.find((item) => item.id == booking.roomId))
+      setSelectedRoom(allRooms.find((item) => item.id == booking.roomId))
       setTimeout(() => {
         setShowBookingForm(false);
         setInitialDate(undefined);
@@ -202,7 +166,7 @@ const handleSelectRoom = (room: Room) => {
         description: booking.description,
         attendees: booking.attendees
       };
-      setSelectedRoom(() => allRooms.find((item) => item.id == booking.roomId))
+      setSelectedRoom(allRooms.find((item) => item.id == booking.roomId))
       setAllBookings([...allBookings, newBooking]);
       setTimeout(() => {
         setShowBookingForm(false);
@@ -257,6 +221,11 @@ const handleSelectRoom = (room: Room) => {
     ...room,
     color: roomColors[room.id] || '#999999'
   }));
+
+  const handleModalRoomList = () => {
+    setModalRoomlist(true)
+  }
+
   return (
     <>
       <div className="h-full flex flex-col">
@@ -278,6 +247,7 @@ const handleSelectRoom = (room: Room) => {
               onClear={clearData}
               onSelectEvent={handleSelectEvent}
               onSelectSlot={handleSelectSlot}
+              // showSelectRoom = {handleModalRoomList}
             />
           </div>
           
@@ -342,6 +312,43 @@ const handleSelectRoom = (room: Room) => {
                 onClose={handleCloseEventDetails}
                 onEdit={handleEditBooking}
                 onDelete={handleDeleteBooking}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalRoomlist && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50">
+          {/* Modal container */}
+          <div className="relative w-full max-w-4xl mx-4 bg-white rounded-lg shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
+            
+            {/* Close button */}
+            <div className="absolute top-0 right-0 pt-4 pr-4 z-10">
+              <button
+                onClick={() => {setModalRoomlist(false)}}
+                className="text-gray-400 hover:text-gray-500 hover:cursor-pointer"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal header */}
+            {/* <div className="p-4 border-b border-gray-200 flex flex-row  items-center">
+              <h3 className="text-lg font-medium leading-6 text-gray-900 pr-3">
+                Select Room List
+              </h3>
+              <button className='btn btn-primary text-white'>
+                Select Room
+              </button>
+            </div> */}
+
+            {/* Calendar content */}
+            <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(90vh - 64px)" }}>
+              <RoomList 
+                rooms={roomsWithColor}
+                onSelectRoom={handleSelectRoom}
+                selectedRoomId={selectedRoom?.id}
               />
             </div>
           </div>

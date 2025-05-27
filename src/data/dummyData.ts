@@ -46,6 +46,15 @@ export const rooms: Room[] = [
     amenities: ['Projector', 'Whiteboards', 'Computers'],
     imageUrl: 'https://images.pexels.com/photos/267507/pexels-photo-267507.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
     color:''
+  },
+  {
+    id: '6',
+    name: 'Training Room 6',
+    capacity: 30,
+    location: 'Floor 1',
+    amenities: ['Projector', 'Whiteboards', 'Computers'],
+    imageUrl: 'https://images.pexels.com/photos/267507/pexels-photo-267507.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    color:''
   }
 ];
 

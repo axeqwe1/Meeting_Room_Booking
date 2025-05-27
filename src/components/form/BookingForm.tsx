@@ -125,7 +125,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   const validation = ():Promise<{success:boolean; message:string}> => {
     return new Promise((resolve,reject) => {
-      try{
+      try {
       const iniStartDate = booking.start
       const iniEndDate = booking.end
       if(SelectedRoom == null){
@@ -136,7 +136,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         return;
       }
       const bookData = bookings.filter((item) => item.roomId == SelectedRoom?.id)
-      console.log(booking)
+      console.log(bookData)
       // ตรวจสอบการซ้อนทับของช่วงเวลา
       if(bookData != null && iniStartDate != null && iniEndDate != null){
         const isOverlapping = bookData.some((booking) => {
@@ -183,7 +183,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         <div className="px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center">
           <div className="flex-shrink-0 w-12 h-12 rounded-md overflow-hidden mr-3">
             <img 
-              src={room.imageUrl} 
+              src={room.imageUrl}
               alt={room.name}
               className="w-full h-full object-cover"
             />

@@ -1,27 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Calendar, Views, momentLocalizer, View, DateLocalizer, Formats } from 'react-big-calendar';
-import moment from 'moment';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import { format } from 'date-fns';
 import { CalendarEvent, Room } from '../types';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { rooms, bookings } from '../data/dummyData';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
 import CustomAlert from './CustomeAlert';
-import { useScrollLock } from "../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
-// import CustomWeekWithoutSunday from '../data/CustomWeekView';
+import { useScrollLock } from "../hook/useScrollLock";
+
+
+
 interface CalendarViewProps {
-  events: CalendarEvent[];
-  onSelectEvent: (event: CalendarEvent, view:string) => void;
-  onSelectSlot: (slotInfo: any, view:string) => void;
-  onClear: () => void
-}
-
-const localizer: DateLocalizer = momentLocalizer(moment);
-
-
-interface TimeRangeFormatArgs {
-  start: Date;
-  end: Date;
+  events: any[];
+  onSelectEvent: (event: CalendarEvent, view: string) => void;
+  onSelectSlot: (slotInfo: any, view: string) => void;
+  onClear: () => void;
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({ 
@@ -30,83 +25,94 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   onSelectSlot,
   onClear,
 }) => {
-  useScrollLock()
-  const [view, setView] = useState<View>(Views.WORK_WEEK as View);
+  useScrollLock();
+  const calendarRef = useRef<FullCalendar>(null);
+  const [view, setView] = useState<string>('timeGridWeek');
   const [date, setDate] = useState(new Date());
   const [selectedRoomIdFilter, setSelectedRoomIdFilter] = useState<string | undefined>(undefined);
   const [showDayModal, setShowDayModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [allRooms] = useState<Room[]>(rooms);
 
-  const filteredEvents = selectedRoomIdFilter
-    ? events.filter(event => event.roomId === selectedRoomIdFilter)
-    : events;
+  // แปลง events ให้เป็นรูปแบบของ FullCalendar
+  const fullCalendarEvents = useMemo(() => {
+    const filteredEvents = selectedRoomIdFilter
+      ? events.filter(event => event.roomId === selectedRoomIdFilter)
+      : events;
 
-  // ประกาศรูปแบบที่ถูกต้อง
-  const calendarFormats: Formats = {
-    timeGutterFormat: 'HH:mm',
-    eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
-      `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
-    agendaTimeFormat: 'HH:mm',
-    agendaTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
-      `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
-    dayFormat: 'D MMMM YYYY',
-    weekdayFormat: 'dddd',
-    monthHeaderFormat: 'MMMM YYYY'
-  };
+    return filteredEvents.map(event => ({
+      id: event.id?.toString() || '',
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      backgroundColor: event.color || '#3788d8',
+      borderColor: event.color || '#3788d8',
+      textColor: '#ffffff',
+      extendedProps: {
+        roomId: event.roomId,
+        originalEvent: event
+      }
+    }));
+  }, [events, selectedRoomIdFilter]);
 
-  const handleViewChange = (newView: View) => {
+  const handleViewChange = (newView: string) => {
     setView(newView);
+    if (calendarRef.current) {
+      calendarRef.current.getApi().changeView(newView);
+    }
   };
 
-  const handleNavigate = (action: 'PREV' | 'NEXT' | 'TODAY') => {
-    const newDate = new Date(date);
-    
-    if (action === 'PREV') {
-      if (view === 'day') newDate.setDate(date.getDate() - 1);
-      else if (view === 'week') newDate.setDate(date.getDate() - 7);
-      else if (view === 'month') newDate.setMonth(date.getMonth() - 1);
-    } else if (action === 'NEXT') {
-      if (view === 'day') newDate.setDate(date.getDate() + 1);
-      else if (view === 'week') newDate.setDate(date.getDate() + 7);
-      else if (view === 'month') newDate.setMonth(date.getMonth() + 1);
-    } else if (action === 'TODAY') {
-      newDate.setDate(new Date().getDate());
+  const handleNavigate = (action: 'prev' | 'next' | 'today') => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      
+      if (action === 'prev') {
+        calendarApi.prev();
+      } else if (action === 'next') {
+        calendarApi.next();
+      } else if (action === 'today') {
+        calendarApi.today();
+        onClear();
+      }
+      
+      // อัพเดท state date
+      setDate(calendarApi.getDate());
+    }
+  };
+
+  // Handle event click
+  const handleEventClick = (clickInfo: any) => {
+    const originalEvent = clickInfo.event.extendedProps.originalEvent;
+    onSelectEvent(originalEvent, view);
+  };
+
+  // Handle date/slot selection
+  const handleDateSelect = (selectInfo: any) => {
+    if (view === 'dayGridMonth') {
+      // ถ้าเป็น month view แล้วคลิกวันเดียว ให้เปิด day modal
+      if (selectInfo.start.getTime() === selectInfo.end.getTime() - 86400000) {
+        setSelectedDate(selectInfo.start);
+        setShowDayModal(true);
+        return;
+      }
     }
     
-    setDate(newDate);
+    // สำหรับการเลือก time slot
+    const slotInfo = {
+      start: selectInfo.start,
+      end: selectInfo.end,
+      action: 'select'
+    };
+    onSelectSlot(slotInfo, view);
   };
 
-  const handleSelectSlotFromMonth = (slotInfo: { start: Date; end: Date; action:string }) => {
-    if (view === 'month' && slotInfo.action != 'select') {
-      setSelectedDate(slotInfo.start);
+  // Handle date click (สำหรับ month view)
+  const handleDateClick = (dateInfo: any) => {
+    if (view === 'dayGridMonth') {
+      setSelectedDate(dateInfo.date);
       setShowDayModal(true);
-    } else {
-      onSelectSlot(slotInfo,view);
     }
   };
-
-const eventStyleGetter = (event: any) => {
-  const baseColor = event.color
-
-  return {
-    style: {
-      backgroundColor: baseColor,
-      color:  'white', // white text or grey text
-      borderRadius: '6px',
-      border: '1px solid #c7c7c7',
-      padding: '4px',
-      opacity: 1 ,
-      transition: 'all 0.2s',
-      pointerEvents: view === 'month' ? 'none' as const : 'auto' as const,
-    },
-  };
-};
-
-
-  const {defaultDate} = useMemo(() => ({
-    defaultDate: new Date()
-  }), [])
 
   const getDayEvents = (date: Date) => {
     return events.filter(event => {
@@ -118,67 +124,87 @@ const eventStyleGetter = (event: any) => {
       );
     });
   };
-  const [isShowAlert,setIsShowAlert] = useState<boolean>(false)
-  const onView = useCallback((newView:View) => setView(newView), [setView])
+
+  // Format title based on view
+  const getTitle = () => {
+    if (view === 'timeGridDay') {
+      return format(date, 'MMMM d, yyyy');
+    } else if (view === 'timeGridWeek') {
+      return format(date, 'MMMM yyyy');
+    } else {
+      return format(date, 'MMMM yyyy');
+    }
+  };
+
+  useEffect(() => {
+    console.log(calendarRef.current)
+    if (calendarRef.current) {
+      calendarRef.current.getApi().changeView('dayGridMonth');
+      setView('dayGridMonth')
+    }
+  }, [])
+
+  const [isShowAlert, setIsShowAlert] = useState<boolean>(false);
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-4">
-        {/* {isShowAlert && (
+        {isShowAlert && (
           <CustomAlert
             title='TEST'
             message='for test'
             mode='ok'
             onConfirm={() => {setIsShowAlert(false)}}
-        />
-        )} */}
+          />
+        )}
+        
         <div className="flex items-center space-x-2">
           <button 
-            onClick={() => {
-              handleNavigate('TODAY')
-              onClear()
-            }}
+            onClick={() => handleNavigate('today')}
             className="hover:cursor-pointer px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
             Today
           </button>
           <button 
-          onClick={() => {setIsShowAlert(true)}}
-          className='hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100'>
-              test
+            onClick={() => {setIsShowAlert(true)}}
+            className='hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100'
+          >
+            test
           </button>
           
           <button 
-            onClick={() => handleNavigate('PREV')}
+            onClick={() => handleNavigate('prev')}
             className="hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100"
           >
             <ChevronLeft className="h-5 w-5 text-gray-500" />
           </button>
           <button 
-            onClick={() => handleNavigate('NEXT')}
+            onClick={() => handleNavigate('next')}
             className="hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100"
           >
             <ChevronRight className="h-5 w-5 text-gray-500" />
           </button>
           <h2 className="text-lg font-semibold text-gray-800">
-            {format(date, view === 'day' ? 'MMMM d, yyyy' : view === 'week' ? 'MMMM yyyy' : 'MMMM yyyy')}
+            {getTitle()}
           </h2>
         </div>
+        
         <div className="flex border border-gray-300 rounded-md overflow-hidden w-full sm:w-auto">
           <button 
-            onClick={() => handleViewChange('day')}
-            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'day' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+            onClick={() => handleViewChange('timeGridDay')}
+            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'timeGridDay' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
           >
             Day
           </button>
-          <button 
-            onClick={() => handleViewChange('work_week')}
-            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'work_week' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+          {/* <button 
+            onClick={() => handleViewChange('timeGridWeek')}
+            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'timeGridWeek' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
           >
             Week
-          </button>
+          </button> */}
           <button 
-            onClick={() => handleViewChange('month')}
-            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'month' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+            onClick={() => handleViewChange('dayGridMonth')}
+            className={`hover:cursor-pointer flex-1 sm:flex-none px-3 py-1.5 text-sm ${view === 'dayGridMonth' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
           >
             Month
           </button>
@@ -187,112 +213,141 @@ const eventStyleGetter = (event: any) => {
       
       <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
         <div className="h-full calendar-container">
-          <Calendar
-            localizer={localizer}
-            events={filteredEvents}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: '100%' }}
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView={'dayGridMonth'}
+            initialDate={date}
+            events={fullCalendarEvents}
+            
+            longPressDelay={100}
+            // Header settings
+            headerToolbar={false}
+            
+            // Time settings
+            slotMinTime="08:00:00"
+            slotMaxTime="19:00:00"
+            slotDuration="00:30:00"
+            
+            // Interaction settings
+            selectable={true}
+            selectMirror={true}
+            editable={false} // ปิดการลาก event เพื่อหลีกเลี่ยงปัญหา touch
+            
+            // Event handlers
+            eventClick={handleEventClick}
+            select={handleDateSelect}
+            dateClick={handleDateClick}
+            
+            // Touch settings สำหรับ mobile
+            eventDisplay="block"
+            dayMaxEvents={1}
+            moreLinkClick="popover"
+            
+            // Responsive settings
+            height="100%"
+            contentHeight="auto"
+            
+            // Custom styling
+            eventClassNames="cursor-pointer"
+            
+            // Fixed grid settings for month view
+            dayMaxEventRows={2}
+            aspectRatio={window.innerWidth < 1024 ? 1.5 : 1.65}
+            
+            // Locale settings
+            locale="en-US"
+            firstDay={1} // เริ่มต้นที่วันจันทร์
+            
+            // Hide weekends in week view (work week)
+            weekends={view !== 'timeGridWeek'}
+            
+            // Custom event rendering
+            eventContent={(eventInfo) => (
+              <div className="p-1 text-sm truncate overflow-hidden">
+                {eventInfo.event.title}
+              </div>
+            )}
+            
+            // View specific settings
             views={{
-              day: true,
-              week: true,
-              month: true,
-              work_week:true,
-            }}
-            view={view}
-            date={date}
-            onNavigate={(newDate:Date) => setDate(newDate)}
-            defaultDate={defaultDate}
-            defaultView={window.innerWidth < 768 ? 'day' : 'work_week'}
-            onView={onView}
-            onSelectEvent={(event) => {
-              onSelectEvent(event,view)
-            }}
-            onSelectSlot={handleSelectSlotFromMonth}
-            selectable
-            eventPropGetter={eventStyleGetter}
-            toolbar={false}
-            // ตั้งค่าเวลาเริ่มต้น (8:00 น.)
-            min={new Date(0, 0, 0, 8, 0, 0)}
-            // ตั้งค่าเวลาสิ้นสุด (19:00 น.)
-            max={new Date(0, 0, 0, 19, 0, 0)}
-            // ตั้งค่าช่วงเวลาที่แสดงในแต่ละช่อง (30 นาที)
-            timeslots={2} // 2 = 30 นาที (60/2)
-            formats={calendarFormats}
-            components={{
-              event: (props) => (
-                <div className="p-1 text-sm truncate">
-                  {props.title}
-                </div>
-              )
+              // timeGridWeek: {
+              //   weekends: false, // Hide weekends for work week
+              // }
             }}
           />
         </div>
       </div>
 
-  {showDayModal && selectedDate && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    {/* Modal container */}
-    <div className="relative w-full max-w-4xl mx-4 bg-white rounded-lg shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
-      
-      {/* Close button */}
-      <div className="absolute top-0 right-0 pt-4 pr-4 z-10">
-        <button
-          onClick={() => setShowDayModal(false)}
-          className="text-gray-400 hover:text-gray-500"
-        >
-          <X className="h-6 w-6" />
-        </button>
-      </div>
+      {/* Day Modal */}
+      {showDayModal && selectedDate && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/50">
+          <div className="relative w-full max-w-4xl mx-4 bg-white rounded-lg shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
+            
+            <div className="absolute top-0 right-0 pt-4 pr-4 z-10">
+              <button
+                onClick={() => setShowDayModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
 
-      {/* Modal header */}
-      <div className="p-4 pb-0 border-b border-gray-200">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          {format(selectedDate, 'MMMM d, yyyy')}
-        </h3>
-      </div>
+            <div className="p-4 pb-0 border-b border-gray-200">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">
+                {format(selectedDate, 'MMMM d, yyyy')}
+              </h3>
+            </div>
 
-      {/* Calendar content */}
-      <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(90vh - 64px)" }}>
-        <div className="h-[600px]">
-          <Calendar
-            localizer={localizer}
-            events={getDayEvents(selectedDate)}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: "100%" }}
-            view={'day'}
-            onView={onView}
-            date={selectedDate}
-            onNavigate={(newDate: Date) => setDate(newDate)}
-            defaultDate={selectedDate}
-            defaultView={'day'}
-            min={new Date(0, 0, 0, 8, 0, 0)}
-            max={new Date(0, 0, 0, 19, 0, 0)}
-            timeslots={2}
-            onSelectEvent={(event) => {
-              if (view == 'month') onSelectEvent(event, view);
-            }}
-            onSelectSlot={(slot) => {
-              onSelectSlot(slot, view);
-            }}
-            selectable
-            eventPropGetter={eventStyleGetter}
-            toolbar={false}
-            components={{
-              event: (props) => (
-                <div className="p-1 text-sm truncate">
-                  {props.title}
-                </div>
-              ),
-            }}
-          />
+            <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(90vh - 64px)" }}>
+              <div className="h-[645px]">
+                <FullCalendar
+                  plugins={[timeGridPlugin, interactionPlugin]}
+                  initialView="timeGridDay"
+                  initialDate={selectedDate}
+                  events={getDayEvents(selectedDate).map(event => ({
+                    id: event.id?.toString() || '',
+                    title: event.title,
+                    start: event.start,
+                    end: event.end,
+                    backgroundColor: event.color || '#3788d8',
+                    borderColor: event.color || '#3788d8',
+                    textColor: '#ffffff',
+                    extendedProps: {
+                      roomId: event.roomId,
+                      originalEvent: event
+                    }
+                  }))}
+                  
+                  headerToolbar={false}
+                  slotMinTime="08:00:00"
+                  slotMaxTime="19:00:00"
+                  slotDuration="00:30:00"
+                  selectable={true}
+                  longPressDelay={100}
+                  eventClick={handleEventClick}
+                  select={(selectInfo) => {
+                    const slotInfo = {
+                      start: selectInfo.start,
+                      end: selectInfo.end,
+                      action: 'select'
+                    };
+                    onSelectSlot(slotInfo, 'day');
+                  }}
+                  
+                  height="100%"
+                  
+                  eventContent={(eventInfo) => (
+                    <div className="p-1 text-sm truncate">
+                      {eventInfo.event.title}
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
     </div>
   );
 };
