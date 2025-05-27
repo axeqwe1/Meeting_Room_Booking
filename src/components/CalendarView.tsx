@@ -17,6 +17,7 @@ interface CalendarViewProps {
   onSelectEvent: (event: CalendarEvent, view: string) => void;
   onSelectSlot: (slotInfo: any, view: string) => void;
   onClear: () => void;
+  showSelectRoom: () => void
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({ 
@@ -24,6 +25,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   onSelectEvent, 
   onSelectSlot,
   onClear,
+  showSelectRoom
 }) => {
   useScrollLock();
   const calendarRef = useRef<FullCalendar>(null);
@@ -35,16 +37,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [allRooms] = useState<Room[]>(rooms);
 
   // แปลง events ให้เป็นรูปแบบของ FullCalendar
-  const fullCalendarEvents = useMemo(() => {
-    const filteredEvents = selectedRoomIdFilter
-      ? events.filter(event => event.roomId === selectedRoomIdFilter)
-      : events;
+const fullCalendarEvents = useMemo(() => {
+  const filteredEvents = selectedRoomIdFilter
+    ? events.filter(event => event.roomId === selectedRoomIdFilter)
+    : events;
 
-    return filteredEvents.map(event => ({
+  return filteredEvents.map(event => {
+    const isAllDay = new Date(event.end).getDate() !== new Date(event.start).getDate(); // ข้ามวันหรือไม่
+
+    return {
       id: event.id?.toString() || '',
       title: event.title,
       start: event.start,
       end: event.end,
+      allDay: isAllDay, // ✅ ใส่ allDay เฉพาะ event ข้ามวัน
       backgroundColor: event.color || '#3788d8',
       borderColor: event.color || '#3788d8',
       textColor: '#ffffff',
@@ -52,8 +58,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         roomId: event.roomId,
         originalEvent: event
       }
-    }));
-  }, [events, selectedRoomIdFilter]);
+    };
+  });
+}, [events, selectedRoomIdFilter]);
 
   const handleViewChange = (newView: string) => {
     setView(newView);
@@ -165,12 +172,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           >
             Today
           </button>
-          <button 
+          {/* <button 
             onClick={() => {setIsShowAlert(true)}}
             className='hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100'
           >
             test
-          </button>
+          </button> */}
           
           <button 
             onClick={() => handleNavigate('prev')}
@@ -212,7 +219,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       </div>
       
       <div className="flex-1 bg-white rounded-lg shadow overflow-hidden">
-        <div className="h-full calendar-container">
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -246,13 +252,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             
             // Responsive settings
             height="100%"
-            contentHeight="auto"
+            // contentHeight="auto"
             
             // Custom styling
             eventClassNames="cursor-pointer"
             
             // Fixed grid settings for month view
-            dayMaxEventRows={2}
+            dayMaxEventRows={false} // หรือเป็นตัวเลข เช่น 2
+
             aspectRatio={window.innerWidth < 1024 ? 1.5 : 1.65}
             
             // Locale settings
@@ -264,7 +271,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             
             // Custom event rendering
             eventContent={(eventInfo) => (
-              <div className="p-1 text-sm truncate overflow-hidden">
+              <div className="px-1 py-0.5 text-[12px] truncate leading-tight overflow-hidden">
                 {eventInfo.event.title}
               </div>
             )}
@@ -276,8 +283,51 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               // }
             }}
           />
-        </div>
       </div>
+            {/* <div className="flex-1 bg-white rounded-lg shadow overflow-hidden z-20">
+        <FullCalendar
+          ref={calendarRef}
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          initialView={view}
+          headerToolbar={false}
+          events={fullCalendarEvents}
+          selectable={true}
+          selectMirror={true}
+          dayMaxEvents={true}
+          weekends={true}
+          initialDate={date}
+          select={handleDateSelect}
+          eventClick={(info) => {
+            const event = events.find(e => e.id === info.event.id);
+            if (event) {
+              onSelectEvent(event, view);
+            }
+          }}
+          height="100%"
+          slotMinTime="08:00:00"
+          slotMaxTime="19:00:00"
+          allDaySlot={true}
+          slotDuration="00:30:00"
+          selectConstraint={{
+            startTime: '08:00',
+            endTime: '19:00'
+          }}
+          eventTimeFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }}
+          selectOverlap={false}
+          eventOverlap={false}
+          longPressDelay={300}
+          eventContent={(arg) => (
+            <div className="p-1 text-sm truncate">
+              {arg.timeText && <span className="font-medium mr-1">{arg.timeText}</span>}
+              {arg.event.title}
+            </div>
+          )}
+        />
+      </div> */}
 
       {/* Day Modal */}
       {showDayModal && selectedDate && (
@@ -293,32 +343,21 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               </button>
             </div>
 
-            <div className="p-4 pb-0 border-b border-gray-200">
+            <div className="p-4 pb-0 border-b border-gray-200 flex flex-row items-center">
               <h3 className="text-lg font-medium leading-6 text-gray-900">
                 {format(selectedDate, 'MMMM d, yyyy')}
               </h3>
+              <button className='btn btn-primary text-white ml-3' onClick={showSelectRoom}>
+                Select Room
+              </button>
             </div>
 
-            <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(90vh - 64px)" }}>
-              <div className="h-[645px]">
+            <div className="p-4 overflow-y-auto h-[600px]" style={{ maxHeight: "calc(90vh - 64px)" }}>
                 <FullCalendar
                   plugins={[timeGridPlugin, interactionPlugin]}
                   initialView="timeGridDay"
                   initialDate={selectedDate}
-                  events={getDayEvents(selectedDate).map(event => ({
-                    id: event.id?.toString() || '',
-                    title: event.title,
-                    start: event.start,
-                    end: event.end,
-                    backgroundColor: event.color || '#3788d8',
-                    borderColor: event.color || '#3788d8',
-                    textColor: '#ffffff',
-                    extendedProps: {
-                      roomId: event.roomId,
-                      originalEvent: event
-                    }
-                  }))}
-                  
+                  events={fullCalendarEvents}
                   headerToolbar={false}
                   slotMinTime="08:00:00"
                   slotMaxTime="19:00:00"
@@ -343,7 +382,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     </div>
                   )}
                 />
-              </div>
             </div>
           </div>
         </div>

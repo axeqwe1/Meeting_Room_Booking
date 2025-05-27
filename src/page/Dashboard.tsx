@@ -247,7 +247,7 @@ const Dashboard: React.FC = () => {
               onClear={clearData}
               onSelectEvent={handleSelectEvent}
               onSelectSlot={handleSelectSlot}
-              // showSelectRoom = {handleModalRoomList}
+              showSelectRoom = {handleModalRoomList}
             />
           </div>
           
