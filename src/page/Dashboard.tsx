@@ -260,14 +260,17 @@ const Dashboard: React.FC = () => {
     <>
       <div className="h-full flex flex-col">
         {/* Mobile Room Toggle */}
-        <div className="lg:hidden mb-4">
-          <button
-            onClick={() => setShowRoomList(!showRoomList)}
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-md flex items-center justify-center"
-          >
-            {showRoomList ? 'Show Calendar' : 'Show Rooms'}
-          </button>
-        </div>
+        {defaultRoom == null && 
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() => setShowRoomList(!showRoomList)}
+              className="w-full px-4 py-2 bg-blue-500 text-white rounded-md flex items-center justify-center"
+            >
+              {showRoomList ? 'Show Calendar' : 'Show Rooms'}
+            </button>
+          </div>
+        }
+
 
         <div className="flex-1 flex flex-col lg:flex-row gap-4">
           {/* Calendar View - Hidden on mobile when room list is shown */}

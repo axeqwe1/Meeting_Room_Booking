@@ -41,7 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
 
   return (
     <aside
-      className={`sm:relative sm:block hidden z-20 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
+      className={`md:relative md:block hidden z-20 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
