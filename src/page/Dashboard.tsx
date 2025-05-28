@@ -203,13 +203,19 @@ const Dashboard: React.FC = () => {
   };
 
   const clearData = () => {
-      setInitialDate(undefined);
-      setInitialEndDate(undefined);
-      setSelectedRoom(undefined);
-      setSelectedBooking(undefined);
-      setSelectedEditRoom(undefined);
-      setSelectedRoom(undefined); 
-      setSelectData(events); // แสดง event ทั้งหมด
+    if(defaultRoom != null){
+        setShowBookingForm(false);
+        setInitialDate(undefined);
+        setInitialEndDate(undefined);
+    }
+    else{
+        setShowBookingForm(false);
+        setInitialDate(undefined);
+        setInitialEndDate(undefined);
+        setSelectedRoom(undefined);
+        setSelectedBooking(undefined);
+        setSelectedEditRoom(undefined);
+    }
   }
   const handleEditBooking = (booking: Booking) => {
     setSelectedBooking(booking);

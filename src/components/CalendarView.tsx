@@ -12,6 +12,7 @@ import { useScrollLock } from "../hook/useScrollLock";
 import { EventContentArg } from '@fullcalendar/core/index.js';
 import { useOutletContext } from 'react-router-dom';
 import '../style/custom-select.css'; // import css ที่เราเขียน
+import { useSettings } from '../context/SettingContext';
 
 
 interface CalendarViewProps {
@@ -38,6 +39,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [showDayModal, setShowDayModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [allRooms] = useState<Room[]>(rooms);
+  const { defaultRoom } = useSettings()
   useEffect(() => {
     setTimeout(() => {
       calendarRef.current?.getApi().updateSize();
@@ -158,14 +160,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   return (
     <div className="h-full flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-4">
-        {isShowAlert && (
+        {/* {isShowAlert && (
           <CustomAlert
             title='TEST'
             message='for test'
             mode='ok'
             onConfirm={() => {setIsShowAlert(false)}}
           />
-        )}
+        )} */}
         
         <div className="flex items-center space-x-2">
           <button 
@@ -357,21 +359,23 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           <div className="relative w-full max-w-4xl mx-4 bg-white rounded-lg shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
             
             <div className="absolute top-0 right-0 pt-4 pr-4 z-10">
-              <button
-                onClick={() => setShowDayModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="h-6 w-6" />
-              </button>
+                <button
+                  onClick={() => setShowDayModal(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="h-6 w-6" />
+                </button>           
             </div>
 
             <div className="p-4 pb-0 border-b border-gray-200 flex flex-row items-center">
               <h3 className="text-lg font-medium leading-6 text-gray-900">
                 {format(selectedDate, 'MMMM d, yyyy')}
               </h3>
-              <button className='btn btn-primary text-white ml-3' onClick={showSelectRoom}>
-                Select Room
-              </button>
+              {defaultRoom == null && 
+                <button className='btn btn-primary text-white ml-3' onClick={showSelectRoom}>
+                  Select Room
+                </button>
+              }
             </div>
 
             <div className="p-4 overflow-y-auto h-[600px]" style={{ maxHeight: "calc(90vh - 64px)" }}>
