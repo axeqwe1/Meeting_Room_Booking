@@ -50,7 +50,8 @@ const Dashboard: React.FC = () => {
       const filtered = events.filter((event) => event.roomId === defaultRoom.id);
       setSelectData(filtered);
     } else {
-      console.log('Waiting for events or defaultRoom to be available');
+      setSelectedRoom(undefined); 
+      setSelectData(events); // แสดง event ทั้งหมด
     }
   }, [defaultRoom,events]);
   const handleSelectEvent = (event: CalendarEvent,view:string) => {
