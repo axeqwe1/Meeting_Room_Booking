@@ -9,7 +9,8 @@ export const rooms: Room[] = [
     location: 'Floor 1',
     amenities: ['Projector', 'Whiteboard', 'Video Conference'],
     imageUrl: 'https://images.pexels.com/photos/260689/pexels-photo-260689.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    color:''
+    color:'',
+    factory:'YPT'
   },
   {
     id: '2',
@@ -18,7 +19,8 @@ export const rooms: Room[] = [
     location: 'Floor 2',
     amenities: ['Whiteboard', 'TV Screen'],
     imageUrl: 'https://images.pexels.com/photos/2041627/pexels-photo-2041627.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    color:''
+    color:'',
+    factory:'YPT'
   },
   {
     id: '3',
@@ -27,7 +29,8 @@ export const rooms: Room[] = [
     location: 'Floor 3',
     amenities: ['Projector', 'Video Conference', 'Coffee Machine'],
     imageUrl: 'https://images.pexels.com/photos/3182834/pexels-photo-3182834.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    color:''
+    color:'',
+    factory:'YPT'
   },
   {
     id: '4',
@@ -36,7 +39,8 @@ export const rooms: Room[] = [
     location: 'Floor 2',
     amenities: ['Whiteboard'],
     imageUrl: 'https://images.pexels.com/photos/416320/pexels-photo-416320.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    color:''
+    color:'',
+    factory:'YPT'
   },
   {
     id: '5',
@@ -45,7 +49,8 @@ export const rooms: Room[] = [
     location: 'Floor 1',
     amenities: ['Projector', 'Whiteboards', 'Computers'],
     imageUrl: 'https://images.pexels.com/photos/267507/pexels-photo-267507.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    color:''
+    color:'',
+    factory:'YPT'
   },
   {
     id: '6',
@@ -54,7 +59,8 @@ export const rooms: Room[] = [
     location: 'Floor 1',
     amenities: ['Projector', 'Whiteboards', 'Computers'],
     imageUrl: 'https://images.pexels.com/photos/267507/pexels-photo-267507.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    color:''
+    color:'',
+    factory:'YPT'
   }
 ];
 

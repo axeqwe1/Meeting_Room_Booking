@@ -6,6 +6,7 @@ export interface Room {
   amenities: string[];
   imageUrl: string;
   color:string;
+  factory:string;
 }
 
 export interface Booking {
