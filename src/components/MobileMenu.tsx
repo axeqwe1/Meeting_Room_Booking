@@ -52,13 +52,13 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         
         <nav className="flex-1 px-2 py-4 space-y-1">
           <button
-            onClick={() => handleNavigation('/')}
+            onClick={() => handleNavigation('/dashboard')}
             className={`w-full flex items-center px-4 py-3 rounded-md ${
-              isActive('/') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'
+              isActive('/dashboard') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
-            <Calendar className={`h-5 w-5 mr-3 ${isActive('/') ? 'text-blue-500' : 'text-gray-500'}`} />
-            <span className={isActive('/') ? 'font-medium' : ''}>Calendar</span>
+            <Calendar className={`h-5 w-5 mr-3 ${isActive('/dashboard') ? 'text-blue-500' : 'text-gray-500'}`} />
+            <span className={isActive('/dashboard') ? 'font-medium' : ''}>Calendar</span>
           </button>
           
           <button
@@ -72,13 +72,13 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           </button>
           
           <button
-            onClick={() => handleNavigation('/my-bookings')}
+            onClick={() => handleNavigation('/settings')}
             className={`w-full flex items-center px-4 py-3 rounded-md ${
-              isActive('/my-bookings') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'
+              isActive('/settings') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
-            <Users className={`h-5 w-5 mr-3 ${isActive('/my-bookings') ? 'text-blue-500' : 'text-gray-500'}`} />
-            <span className={isActive('/my-bookings') ? 'font-medium' : ''}>My Bookings</span>
+            <Settings className={`h-5 w-5 mr-3 ${isActive('/settings') ? 'text-blue-500' : 'text-gray-500'}`} />
+            <span className={isActive('/settings') ? 'font-medium' : ''}>Settings</span>
           </button>
         </nav>
         

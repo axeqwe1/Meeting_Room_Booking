@@ -11,6 +11,7 @@ import { pre } from 'motion/react-client';
 import { useAlert } from '../context/AlertContext';
 import { CircleAlert, X } from 'lucide-react';
 import { useRoomContext  } from '../context/RoomContext';
+import { useSettings } from '../context/SettingContext';
 
 const Dashboard: React.FC = () => {
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -19,6 +20,7 @@ const Dashboard: React.FC = () => {
   const [initialEndDate, setInitialEndDate] = useState<Date | undefined>(undefined);
   const [showRoomList, setShowRoomList] = useState(false);
   const [modalRoomlist,setModalRoomlist] = useState(false);
+  const {defaultRoom} = useSettings()
   // const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
   const {showAlert} = useAlert()
     const {
@@ -39,7 +41,12 @@ const Dashboard: React.FC = () => {
     roomColors
   } = useRoomContext();
   
-  
+  useEffect(() => {
+    if(defaultRoom != null){
+        console.log(defaultRoom)
+        handleSelectRoom(defaultRoom)
+    }
+  },[defaultRoom])
   const handleSelectEvent = (event: CalendarEvent,view:string) => {
     // if(view != 'month'){
       setSelectedEvent(event);
@@ -57,40 +64,18 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date;  }, view:string) => {
-    console.log(slotInfo)
+    
+    const startDay = new Date(slotInfo.start)
+    const endDay = new Date(slotInfo.end)
     console.log(view)
-    console.log(selectedRoom)
-    if(view != 'month'){
-      if(selectedRoom == null){
-        showAlert({
-          title: 'Warning',
-          message: 'Please Select Room for Booking',
-          icon: CircleAlert,
-          iconColor: 'text-yellow-500',
-          iconSize: 80
-        });
-        return;
-      }
-    setInitialDate(slotInfo.start);
-    setInitialEndDate(slotInfo.end);
-    setShowBookingForm(true);
+
+    const startDateOnly = new Date(startDay).setHours(0, 0, 0, 0);
+    const endDateOnly = new Date(endDay).setHours(0, 0, 0, 0);
+    if (endDateOnly > startDateOnly) {
+        endDay.setDate(endDay.getDate() - 1);
+        console.log(endDay); // ผลลัพธ์: "2023-10-31" (31 ตุลาคม 2023)
     }
-    // else if(slotInfo.action == 'select' && view == 'month'){
-    //   if(selectedRoom == null){
-    //     showAlert({
-    //       title: 'Warning',
-    //       message: 'Please Select Room for Booking',
-    //       icon: CircleAlert,
-    //       iconColor: 'text-yellow-500',
-    //       iconSize: 80
-    //     });
-    //     return;
-    //   }
-    //   setInitialDate(slotInfo.start);
-    //   setInitialEndDate(slotInfo.end);
-    //   setShowBookingForm(true);
-    // }
-    else{
+    if(view != 'dayGridMonth'){
       if(selectedRoom == null){
         showAlert({
           title: 'Warning',
@@ -101,8 +86,24 @@ const Dashboard: React.FC = () => {
         });
         return;
       }
-      setInitialDate(slotInfo.start);
-      setInitialEndDate(slotInfo.end);
+      setInitialDate(startDay);
+      setInitialEndDate(endDay);
+      setShowBookingForm(true);
+    }
+    else{
+      // endDay.setDate(endDay.getDate() - 1)
+      if(selectedRoom == null){
+        showAlert({
+          title: 'Warning',
+          message: 'Please Select Room for Booking',
+          icon: CircleAlert,
+          iconColor: 'text-yellow-500',
+          iconSize: 80
+        });
+        return;
+      }
+      setInitialDate(startDay);
+      setInitialEndDate(endDay);
       setShowBookingForm(true);
     }
   };
@@ -211,7 +212,7 @@ const Dashboard: React.FC = () => {
     setShowBookingForm(false);
     setInitialDate(undefined);
     setInitialEndDate(undefined);
-    setSelectedRoom(undefined);
+    // setSelectedRoom(undefined);
     setSelectedBooking(undefined);
     setShowEventDetails(false)
     setSelectedEditRoom(undefined);
@@ -241,7 +242,7 @@ const Dashboard: React.FC = () => {
 
         <div className="flex-1 flex flex-col lg:flex-row gap-4">
           {/* Calendar View - Hidden on mobile when room list is shown */}
-          <div className={`${showRoomList ? 'hidden' : 'block'} lg:block lg:w-3/4 h-[calc(100vh-12rem)] lg:h-auto`}>
+          <div className={`${showRoomList && !defaultRoom ? 'hidden' : 'block'} lg:block lg:flex-1 h-[calc(100vh-12rem)] lg:h-auto`}>
             <CalendarView 
               events={selectData}
               onClear={clearData}
@@ -252,13 +253,16 @@ const Dashboard: React.FC = () => {
           </div>
           
           {/* Room List - Hidden on mobile when calendar is shown */}
-          <div className={`${!showRoomList ? 'hidden' : 'block'} lg:block lg:w-1/4`}>
-            <RoomList 
-              rooms={roomsWithColor}
-              onSelectRoom={handleSelectRoom}
-              selectedRoomId={selectedRoom?.id}
-            />
-          </div>
+          {defaultRoom == null && 
+            <div className={`${!showRoomList ? 'hidden' : 'block'} lg:block lg:w-1/4`}>
+              <RoomList 
+                rooms={roomsWithColor}
+                onSelectRoom={handleSelectRoom}
+                selectedRoomId={selectedRoom?.id}
+              />
+            </div>
+          }
+
         </div>
       </div>
       

@@ -10,7 +10,8 @@ import { rooms, bookings } from '../data/dummyData';
 import CustomAlert from './CustomeAlert';
 import { useScrollLock } from "../hook/useScrollLock";
 import { EventContentArg } from '@fullcalendar/core/index.js';
-
+import { useOutletContext } from 'react-router-dom';
+import '../style/custom-select.css'; // import css ที่เราเขียน
 
 
 interface CalendarViewProps {
@@ -29,6 +30,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   showSelectRoom
 }) => {
   useScrollLock();
+  const { collapsed } = useOutletContext<{ collapsed: boolean }>();
   const calendarRef = useRef<FullCalendar>(null);
   const [view, setView] = useState<string>('timeGridWeek');
   const [date, setDate] = useState(new Date());
@@ -36,49 +38,42 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [showDayModal, setShowDayModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [allRooms] = useState<Room[]>(rooms);
-
-  // แปลง events ให้เป็นรูปแบบของ FullCalendar
-const fullCalendarEvents = useMemo(() => {
-  const filteredEvents = selectedRoomIdFilter
-    ? events.filter(event => event.roomId === selectedRoomIdFilter)
-    : events;
-
-  return filteredEvents.map(event => {
-    const isAllDay = new Date(event.end).getDate() !== new Date(event.start).getDate(); // ข้ามวันหรือไม่
-
-    return {
-      id: event.id?.toString() || '',
-      title: event.title,
-      start: event.start,
-      end: event.end,
-      allDay: isAllDay, // ✅ ใส่ allDay เฉพาะ event ข้ามวัน
-      backgroundColor: event.color || '#3788d8',
-      borderColor: event.color || '#3788d8',
-      textColor: '#ffffff',
-      extendedProps: {
-        roomId: event.roomId,
-        originalEvent: event
-      }
-    };
-  });
-}, [events, selectedRoomIdFilter]);
-
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const highlights = document.querySelectorAll('.fc-highlight');
-
-      highlights.forEach((el) => {
-        (el as HTMLElement).style.backgroundColor = 'rgba(107, 114, 128, 0.3)';
-      });
+    setTimeout(() => {
+      calendarRef.current?.getApi().updateSize();
+    }, 300); // match Sidebar transition
+  }, [collapsed]);
+  // แปลง events ให้เป็นรูปแบบของ FullCalendar
+  const fullCalendarEvents = useMemo(() => {
+    const filteredEvents = selectedRoomIdFilter
+      ? events.filter(event => event.roomId === selectedRoomIdFilter)
+      : events;
+    console.log(filteredEvents)
+    return filteredEvents.map(event => {
+      const isAllDay = new Date(event.end).getDate() !== new Date(event.start).getDate(); // ข้ามวันหรือไม่
+      const exclusiveEnd = new Date(event.end)
+      if(isAllDay){
+        exclusiveEnd.setDate(exclusiveEnd.getDate() + 1)
+      }
+      
+      return {
+        id: event.id?.toString() || '',
+        title: event.title,
+        start: event.start,
+        end: exclusiveEnd,
+        allDay: isAllDay, // ✅ ใส่ allDay เฉพาะ event ข้ามวัน
+        backgroundColor: event.color || '#d4d4d4',
+        borderColor: event.color || '#d4d4d4',
+        textColor: '#ffffff',
+        extendedProps: {
+          roomId: event.roomId,
+          originalEvent: event
+        }
+      };
     });
+    
+  }, [events, selectedRoomIdFilter]);
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   const handleViewChange = (newView: string) => {
     setView(newView);
@@ -137,17 +132,6 @@ const fullCalendarEvents = useMemo(() => {
       setSelectedDate(dateInfo.date);
       setShowDayModal(true);
     }
-  };
-
-  const getDayEvents = (date: Date) => {
-    return events.filter(event => {
-      const eventDate = new Date(event.start);
-      return (
-        eventDate.getDate() === date.getDate() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getFullYear() === date.getFullYear()
-      );
-    });
   };
 
   // Format title based on view
@@ -291,8 +275,15 @@ const fullCalendarEvents = useMemo(() => {
             eventContent={(eventInfo:EventContentArg) => {
               const start = eventInfo.event.start;
               const end = eventInfo.event.end;
-              const test = eventInfo.event
-              console.log(test)
+              const isAllDay = eventInfo.event.allDay
+              
+              if(isAllDay){
+                if(end != null){
+                  end.setDate(end.getDate() - 1)
+                  
+                }
+              }
+              // const test = eventInfo.event
               const timeFormat: Intl.DateTimeFormatOptions = {
                 day: '2-digit',      // แสดงเลขวัน เช่น 27
                 month: '2-digit',    // แสดงเลขเดือน เช่น 05
@@ -300,7 +291,6 @@ const fullCalendarEvents = useMemo(() => {
                 minute: '2-digit',
                 hour12: true,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
               };
-
               return (
                   <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
                      {start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)} {eventInfo.event.title}
@@ -397,15 +387,8 @@ const fullCalendarEvents = useMemo(() => {
                   selectable={true}
                   longPressDelay={300}
                   eventClick={handleEventClick}
-                  select={(selectInfo) => {
-                    const slotInfo = {
-                      start: selectInfo.start,
-                      end: selectInfo.end,
-                      action: 'select'
-                    };
-                    onSelectSlot(slotInfo, 'day');
-                  }}
-                  
+                  select={handleDateSelect}
+                  selectMirror={true}
                   height="100%"
                   
                   eventContent={(eventInfo:EventContentArg) => {
@@ -421,9 +404,9 @@ const fullCalendarEvents = useMemo(() => {
                     };
 
                     return (
-                        <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
-                           {start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)} {eventInfo.event.title}
-                        </div>
+                      <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden bg-black/50">
+                          {start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)} {eventInfo.event.title}
+                      </div>
                     );
                   }}
                 />

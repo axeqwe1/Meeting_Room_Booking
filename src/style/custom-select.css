@@ -1,0 +1,5 @@
+.fc-event-mirror.fc-event {
+    background-color: #000 !important;
+    /* สีเฉพาะ event ที่เป็น mirror */
+    opacity: 0.5;
+}

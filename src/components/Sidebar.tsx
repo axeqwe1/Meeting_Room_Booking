@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { Calendar, LayoutGrid, Users, LogOut, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
+import { Calendar, LayoutGrid, Users, LogOut, ChevronLeft, ChevronRight, PlusCircle, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, NavLink } from 'react-router-dom';
 
-const Sidebar: React.FC = () => {
+
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: (value: boolean) => void;
+}
+
+
+const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState<boolean>(false);
   const { logout } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
@@ -26,10 +32,10 @@ const Sidebar: React.FC = () => {
       action: () => navigate('/rooms')
     },
     {
-      icon: Users,
-      label: 'My Bookings',
-      path: '/my-booking',
-      action: () => navigate('/my-booking')
+      icon: Settings,
+      label: 'Settings',
+      path: '/settings',
+      action: () => navigate('/settings')
     }
   ];
 
@@ -69,13 +75,13 @@ const Sidebar: React.FC = () => {
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <a
+              <NavLink
                 key={item.label}
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  item.action();
-                }}
+                to={item.path}
+                // onClick={(e) => {
+                //   e.preventDefault();
+                //   item.action();
+                // }}
                 className={`flex items-center px-4 py-2 rounded-md group ${
                   isActive(item.path) 
                     ? 'text-blue-600 bg-blue-50' 
@@ -86,7 +92,7 @@ const Sidebar: React.FC = () => {
                   collapsed ? 'mr-0' : 'mr-3'
                 }`} />
                 {!collapsed && <span className="font-medium">{item.label}</span>}
-              </a>
+              </NavLink>
             );
           })}
         </nav>
