@@ -23,7 +23,7 @@ const Dashboard: React.FC = () => {
   const {defaultRoom} = useSettings()
   // const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
   const {showAlert} = useAlert()
-    const {
+  const {
     allRooms,
     allBookings,
     setAllBookings,
@@ -42,11 +42,17 @@ const Dashboard: React.FC = () => {
   } = useRoomContext();
   
   useEffect(() => {
-    if(defaultRoom != null){
-        console.log(defaultRoom)
-        handleSelectRoom(defaultRoom)
+    if (defaultRoom) {
+      console.log('Selecting default room:', defaultRoom);
+      // เปลี่ยนห้องใหม่
+      setSelectedRoom(defaultRoom);
+      // แสดง event เฉพาะของห้องนี้
+      const filtered = events.filter((event) => event.roomId === defaultRoom.id);
+      setSelectData(filtered);
+    } else {
+      console.log('Waiting for events or defaultRoom to be available');
     }
-  },[defaultRoom])
+  }, [defaultRoom,events]);
   const handleSelectEvent = (event: CalendarEvent,view:string) => {
     // if(view != 'month'){
       setSelectedEvent(event);
@@ -111,6 +117,7 @@ const Dashboard: React.FC = () => {
   const handleSelectRoom = (room: Room) => {
     setShowBookingForm(false);
     setShowRoomList(false);
+    console.log(room)
     // ถ้าห้องที่คลิกซ้ำ == ห้องที่เลือกอยู่
     if (selectedRoom && selectedRoom.id === room.id) {
       // ยกเลิกการเลือกห้อง
@@ -149,12 +156,19 @@ const Dashboard: React.FC = () => {
       });
       setSelectedRoom(allRooms.find((item) => item.id == booking.roomId))
       setTimeout(() => {
-        setShowBookingForm(false);
-        setInitialDate(undefined);
-        setInitialEndDate(undefined);
-        setSelectedRoom(undefined);
-        setSelectedBooking(undefined);
-        setSelectedEditRoom(undefined);
+        if(defaultRoom != null){
+            setShowBookingForm(false);
+            setInitialDate(undefined);
+            setInitialEndDate(undefined);
+        }
+        else{
+            setShowBookingForm(false);
+            setInitialDate(undefined);
+            setInitialEndDate(undefined);
+            setSelectedRoom(undefined);
+            setSelectedBooking(undefined);
+            setSelectedEditRoom(undefined);
+        }
       },100)
     }else{
       const newBooking: Booking = {
@@ -170,11 +184,19 @@ const Dashboard: React.FC = () => {
       setSelectedRoom(allRooms.find((item) => item.id == booking.roomId))
       setAllBookings([...allBookings, newBooking]);
       setTimeout(() => {
-        setShowBookingForm(false);
-        setInitialDate(undefined);
-        setInitialEndDate(undefined);
-        setSelectedRoom(undefined);
-        setSelectedEditRoom(undefined);
+        if(defaultRoom != null){
+            setShowBookingForm(false);
+            setInitialDate(undefined);
+            setInitialEndDate(undefined);
+        }
+        else{
+            setShowBookingForm(false);
+            setInitialDate(undefined);
+            setInitialEndDate(undefined);
+            setSelectedRoom(undefined);
+            setSelectedBooking(undefined);
+            setSelectedEditRoom(undefined);
+        }
       },100)
     }
   };
