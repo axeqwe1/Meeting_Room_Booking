@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, LayoutGrid, Users, LogOut, ChevronLeft, ChevronRight, PlusCircle, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
+import { SignOut } from '../api/Auth';
 
 
 interface SidebarProps {
@@ -103,8 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              logout();
-              navigate('/login');
+              logout()
             }}
             className={`flex items-center ${collapsed ? 'justify-center' : ''} px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md`}
           >

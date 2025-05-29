@@ -1,6 +1,6 @@
 import { User } from "./user";
 
-interface LoginResponse {
-  user: User;
-  token: string;
+export interface LoginResponse {
+  message: string;
+  status: number;
 }

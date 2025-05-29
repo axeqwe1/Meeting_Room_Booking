@@ -256,7 +256,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             
             // Responsive settings
             height="100%"
-            // contentHeight="auto"
+            // contentHeight="100%"
             
             // Custom styling
             eventClassNames="cursor-pointer"
@@ -269,7 +269,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             // Locale settings
             locale="en-US"
             firstDay={1} // เริ่มต้นที่วันจันทร์
-            
+            nowIndicator={true}
+            // เพิ่มการตั้งค่ารูปแบบเวลาแบบ 24 ชั่วโมงที่นี่
+            slotLabelFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              meridiem: false
+            }}
+            eventTimeFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              meridiem: false
+            }}
             // Hide weekends in week view (work week)
             weekends={view !== 'timeGridWeek'}
             
@@ -291,7 +304,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                 month: '2-digit',    // แสดงเลขเดือน เช่น 05
                 hour: '2-digit',
                 minute: '2-digit',
-                hour12: true,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
+                hour12: false,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
               };
               return (
                   <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
@@ -394,7 +407,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                   select={handleDateSelect}
                   selectMirror={true}
                   height="100%"
-                  
+                  nowIndicator={true}
+                  // เพิ่มการตั้งค่ารูปแบบเวลาแบบ 24 ชั่วโมงที่นี่
+                  slotLabelFormat={{
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                    meridiem: false
+                  }}
+                  eventTimeFormat={{
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                    meridiem: false
+                  }}
                   eventContent={(eventInfo:EventContentArg) => {
                     const start = eventInfo.event.start;
                     const end = eventInfo.event.end;
@@ -404,7 +430,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                       month: '2-digit',    // แสดงเลขเดือน เช่น 05
                       hour: '2-digit',
                       minute: '2-digit',
-                      hour12: true,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
+                      hour12: false,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
                     };
 
                     return (

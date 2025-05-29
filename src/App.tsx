@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import Dashboard from './page/Dashboard';
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import AuthGuard from './components/AuthGuard';
 import { AuthProvider } from './context/AuthContext';
 import Login from './page/login';
