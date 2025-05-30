@@ -5,7 +5,7 @@ import { Users, MapPin, MonitorSmartphone } from 'lucide-react';
 interface RoomListProps {
   rooms: Room[];
   onSelectRoom: (room: Room) => void;
-  selectedRoomId?: string;
+  selectedRoomId?: number;
 }
 
 const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId }) => {

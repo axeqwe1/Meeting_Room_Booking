@@ -1,5 +1,5 @@
 export interface Room {
-  id: string;
+  id: number;
   name: string;
   capacity: number;
   location: string;
@@ -11,7 +11,7 @@ export interface Room {
 
 export interface Booking {
   id: string;
-  roomId: string;
+  roomId: number;
   title: string;
   start: Date;
   end: Date;
@@ -25,7 +25,7 @@ export interface CalendarEvent {
   title: string;
   start: Date;
   end: Date;
-  roomId: string;
+  roomId: number;
   resourceId?: string;
   roomName?: string;
 }

@@ -39,9 +39,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             try {
                 const res = await Me();
                 if (res && res.data) {
-                setUser(res.data);
+                    setUser(res.data);
                 } else {
-                setUser(null);
+                    setUser(null);
                 }
             } catch (err: any) {
                 // ตรวจสอบว่าเป็น 401 หรือไม่ ถ้าใช่ ไม่ต้อง console.error

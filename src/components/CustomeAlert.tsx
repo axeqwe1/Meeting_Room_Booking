@@ -74,7 +74,7 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
         <p className="text-xl mb-6 text-center">{message}</p>
 
         {mode === "confirm" ? (
-          <div className="flex justify-end gap-4 pt-6 mt-6">
+          <div className="flex justify-end gap-4 pt-6">
             <button
               onClick={onCancel}
               className="px-4 py-3 rounded-xl border border-gray-400 hover:bg-gray-100 hover:cursor-pointer"

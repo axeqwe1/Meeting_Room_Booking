@@ -143,7 +143,7 @@ const Dashboard: React.FC = () => {
         const existBooking = prev.find((item) => item.id == booking.id)
         if(existBooking != null){
           existBooking.id = booking.id ? booking.id : 'null';
-          existBooking.roomId = booking.roomId ? booking.roomId : 'null';
+          existBooking.roomId = booking.roomId ? booking.roomId : 0;
           existBooking.description = booking.description;
           existBooking.attendees = booking.attendees;
           existBooking.start = booking.start ? booking.start : new Date
@@ -174,7 +174,7 @@ const Dashboard: React.FC = () => {
     }else{
       const newBooking: Booking = {
         id: `booking_${Date.now()}`,
-        roomId: booking?.roomId || '',
+        roomId: booking?.roomId || 0,
         title: booking.title || 'Untitled Meeting',
         start: booking.start || new Date(),
         end: booking.end || new Date(),

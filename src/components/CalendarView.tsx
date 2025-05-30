@@ -374,7 +374,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             <div className="absolute top-0 right-0 pt-4 pr-4 z-10">
                 <button
                   onClick={() => setShowDayModal(false)}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-gray-400 hover:text-gray-500 cursor-pointer"
                 >
                   <X className="h-6 w-6" />
                 </button>           

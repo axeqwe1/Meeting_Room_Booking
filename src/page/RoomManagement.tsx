@@ -1,36 +1,178 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Room } from '../types';
 import { rooms as initialRooms } from '../data/dummyData';
 import Layout from '../components/Layout';
-import { Plus, Pencil, Trash2, Users, MapPin } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, MapPin, CircleCheck, CircleCheckIcon, CircleX, CircleAlertIcon } from 'lucide-react';
 import RoomForm from '../components/form/RoomForm';
 import { createPortal } from 'react-dom';
-
+import { CreateRoom, DeleteRoom, GetAllRoom, UpdateRoom } from '../api/Room';
+import { CreateRoomRequest, UpdateRoomRequest } from '../types/RequestDTO';
+import CustomAlert from '../components/CustomeAlert';
+import {useAlert} from '../context/AlertContext'
 const RoomManagement: React.FC = () => {
-  const [rooms, setRooms] = useState<Room[]>(initialRooms);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [showRoomForm, setShowRoomForm] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
+  const {showAlert} = useAlert()
+  const fetchRoomData = async () => {
+      const res = await GetAllRoom()
+      const room = res.data
+      console.log(res)
+      let arrRoom:Room[] = []
+      room.forEach((item:any) => {
+        let amentityArr:string[] = []
 
-  const handleAddRoom = (room: Room) => {
-    setRooms([...rooms, { ...room, id: `room_${Date.now()}` }]);
+        item.amentities.forEach((item:any) => {
+          amentityArr.push(item.amenity_name)
+        })
+        // console.log(amentityArr)
+        const data:Room = {
+          id:item.roomId,
+          name:item.roomname,
+          capacity:item.capacity,
+          location:item.location,
+          factory:item.factory,
+          amenities:amentityArr,
+          imageUrl:item.imageUrl,
+          color:''
+        }
+        arrRoom.push(data)
+      });
+      setRooms(arrRoom)
+    }
+
+  const handleAddRoom = async (room: Room) => {
+    
+    const data:CreateRoomRequest = {
+      roomname:room.name,
+      capacity:room.capacity,
+      location:room.location,
+      factory:room.factory,
+      imageUrl:room.imageUrl,
+      amentities:room.amenities
+    }
+    const res = await CreateRoom(data)
+    if(res.status == 200){
+        showAlert({
+          title: 'Success',
+          message: 'Add New Room Success',
+          icon: CircleCheckIcon,
+          iconColor: 'text-green-500',
+          iconSize: 80
+        });
+    }
+    if(res.data.error != null)
+      {
+        showAlert({
+          title: 'Failed',
+          message: `Add New Room Failed : ${res.data.error}`,
+          icon: CircleX,
+          iconColor: 'text-red-500',
+          iconSize: 80
+        });
+    }
+    fetchRoomData()
     setShowRoomForm(false);
   };
 
-  const handleEditRoom = (room: Room) => {
-    setRooms(rooms.map(r => r.id === room.id ? room : r));
+  const handleEditRoom = async (room: Room) => {
+    const data:UpdateRoomRequest = {
+      roomid:room.id,
+      roomname:room.name,
+      capacity:room.capacity,
+      location:room.location,
+      factory:room.factory,
+      imageUrl:room.imageUrl,
+      amentities:room.amenities
+    }
+    const res = await UpdateRoom(data)
+    console.log(res)
+    if(res.status == 200){
+        showAlert({
+          title: 'Success',
+          message: 'Add New Room Success',
+          icon: CircleCheckIcon,
+          iconColor: 'text-green-500',
+          iconSize: 80
+        });
+    }else{
+      showAlert({
+        title: 'Failed',
+        message: `Add New Room Failed : ${res.message}`,
+        icon: CircleX,
+        iconColor: 'text-red-500',
+        iconSize: 80
+      });
+    }
+
+    if(res.data.error != null){
+        showAlert({
+          title: 'Failed',
+          message: `Add New Room Failed : ${res.data.error}`,
+          icon: CircleX,
+          iconColor: 'text-red-500',
+          iconSize: 80
+        });
+    }
+    fetchRoomData()
     setShowRoomForm(false);
     setSelectedRoom(undefined);
   };
 
-  const handleDeleteRoom = (roomId: string) => {
-    if (window.confirm('Are you sure you want to delete this room?')) {
-      setRooms(rooms.filter(r => r.id !== roomId));
-    }
+  const handleDeleteRoom = (roomId: number) => {
+      showAlert({
+      title: 'Warning',
+      message: `Are you sure you want to delete this room?`,
+      icon: CircleAlertIcon,
+      iconColor: 'text-yellow-500',
+      iconSize: 80,
+      mode: "confirm",
+      onConfirm() {
+        SubmitDeleteRoom(roomId)
+      },
+    });
   };
-
+  const SubmitDeleteRoom = async (roomId:number) => {
+      console.log(roomId)
+      const res = await DeleteRoom(roomId)
+      console.log(res)
+    if(res.status == 200){
+      showAlert({
+        title: 'Success',
+        message: 'Add New Room Success',
+        icon: CircleCheckIcon,
+        iconColor: 'text-green-500',
+        iconSize: 80
+      });
+      fetchRoomData()
+    }
+    else{
+      showAlert({
+        title: 'Failed',
+        message: `Add New Room Failed : ${res.message}`,
+        icon: CircleX,
+        iconColor: 'text-red-500',
+        iconSize: 80
+      });
+    }
+    if(res.data.error != null){
+        showAlert({
+          title: 'Failed',
+          message: `Add New Room Failed : ${res.data.error}`,
+          icon: CircleX,
+          iconColor: 'text-red-500',
+          iconSize: 80
+        });
+    }
+  }
   const handleShowRoomForm = () => {
     setShowRoomForm(false)
   }
+
+  useEffect(() => {
+    fetchRoomData()
+  },[])
+
   return (
     <>
       <div className="container mx-auto px-4 py-4">
@@ -80,6 +222,8 @@ const RoomManagement: React.FC = () => {
                     </span>
                   ))}
                 </div>
+              </div>
+              <div className='p-4 pt-0'>
                 <div className="flex justify-end space-x-2">
                   <button
                     onClick={() => {

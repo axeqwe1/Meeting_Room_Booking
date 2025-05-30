@@ -3,6 +3,7 @@ import { Room } from '../../types/index';
 import { X, Plus, ChevronDown } from 'lucide-react';
 import { useScrollLock } from "../../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
 import { useAuth } from '../../context/AuthContext';
+import { useAlert } from '../../context/AlertContext';
 interface RoomFormProps {
   room?: Room;
   onSubmit: (room: Room) => void;
@@ -15,18 +16,19 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
   const [showDropdown,setShowDropdown] = useState<boolean>(true)
   const [isFactoryDropdownOpen, setIsFactoryDropdownOpen] = useState<boolean>(false)
   const factoryOptions = ['All', 'GNX', 'YPT']
+  
   useEffect(() => {
-    if(user != null){
-      if(user.factorie.toLowerCase() == 'all'){
-        setShowDropdown(true)
+    // if(user != null){
+    //   if(user.factorie.toLowerCase() == 'all'){
+    //     setShowDropdown(true)
         
-      }
-    }else{
-      console.warn('loading user ....')
-    }
+    //   }
+    // }else{
+    //   console.warn('loading user ....')
+    // }
   },[])
   const [formData, setFormData] = useState<Partial<Room>>({
-    id: room?.id || '',
+    id: room?.id || 0,
     name: room?.name || '',
     capacity: room?.capacity || 0,
     location: room?.location || '',

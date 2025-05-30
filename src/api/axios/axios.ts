@@ -74,17 +74,17 @@ const request = (config: AxiosRequestConfig = {}) : Promise<AxiosResponse> => {
 }
 
 // --- เพิ่ม interceptor สำหรับ refresh token ---
-let isRefreshing = false;
-let refreshSubscribers: Array<(token: string) => void> = [];
+// let isRefreshing = false;
+// let refreshSubscribers: Array<(token: string) => void> = [];
 
-function subscribeTokenRefresh(cb: (token: string) => void) {
-  refreshSubscribers.push(cb);
-}
+// function subscribeTokenRefresh(cb: (token: string) => void) {
+//   refreshSubscribers.push(cb);
+// }
 
-function onRefreshed(token: string) {
-  refreshSubscribers.forEach(cb => cb(token));
-  refreshSubscribers = [];
-}
+// function onRefreshed(token: string) {
+//   refreshSubscribers.forEach(cb => cb(token));
+//   refreshSubscribers = [];
+// }
 
 // --- Interceptor สำหรับ Refresh Token ---
 Axios.interceptors.response.use(
