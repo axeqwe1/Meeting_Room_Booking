@@ -17,13 +17,13 @@ export const GetAllRoom = async (): Promise<any | undefined> => {
         }
         // error อื่น log ปกติ
         console.error(ex)
-        return ex
+        return ex.status
     }
 }
 
 export const GetRoomId = async (id:number): Promise<any | undefined> => {
     try{
-        const res =  await apiService.get('/Booking/GetById/' + id)
+        const res =  await apiService.get('/Room/GetById/' + id)
         return res
     }
     catch(ex:any){

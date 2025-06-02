@@ -50,14 +50,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     const filteredEvents = selectedRoomIdFilter
       ? events.filter(event => event.roomId === selectedRoomIdFilter)
       : events;
-    console.log(filteredEvents)
     return filteredEvents.map(event => {
       const isAllDay = new Date(event.end).getDate() !== new Date(event.start).getDate(); // ข้ามวันหรือไม่
       const exclusiveEnd = new Date(event.end)
       if(isAllDay){
         exclusiveEnd.setDate(exclusiveEnd.getDate() + 1)
       }
-      
       return {
         id: event.id?.toString() || '',
         title: event.title,
@@ -287,29 +285,28 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             weekends={view !== 'timeGridWeek'}
             
             // Custom event rendering
-            eventContent={(eventInfo:EventContentArg) => {
-              const start = eventInfo.event.start;
-              const end = eventInfo.event.end;
-              const isAllDay = eventInfo.event.allDay
-              
-              if(isAllDay){
-                if(end != null){
-                  end.setDate(end.getDate() - 1)
-                  
-                }
+            eventContent={(eventInfo: EventContentArg) => {
+              const start = fullCalendarEvents.find((item) => item.id == eventInfo.event.id)?.start;
+              const originalEnd = fullCalendarEvents.find((item) => item.id == eventInfo.event.id)?.end;
+              const isAllDay = eventInfo.event.allDay;
+              let displayEnd = originalEnd ? new Date(originalEnd) : undefined;
+
+              if (isAllDay && displayEnd) {
+                displayEnd.setDate(displayEnd.getDate() - 1); // ✅ ลด 1 วันเฉพาะตอนแสดงผล
               }
-              // const test = eventInfo.event
+
               const timeFormat: Intl.DateTimeFormatOptions = {
-                day: '2-digit',      // แสดงเลขวัน เช่น 27
-                month: '2-digit',    // แสดงเลขเดือน เช่น 05
+                day: '2-digit',
+                month: '2-digit',
                 hour: '2-digit',
                 minute: '2-digit',
-                hour12: false,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
+                hour12: false,
               };
+
               return (
-                  <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
-                     {start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)} {eventInfo.event.title}
-                  </div>
+                <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
+                  {start?.toLocaleTimeString([], timeFormat)? start?.toLocaleTimeString([], timeFormat) : eventInfo.event.start?.toLocaleTimeString([], timeFormat)} - {displayEnd?.toLocaleTimeString([], timeFormat)? displayEnd?.toLocaleTimeString([], timeFormat) : eventInfo.event.end?.toLocaleTimeString([], timeFormat)} : {eventInfo.event.title}
+                </div>
               );
             }}
             
@@ -422,9 +419,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     meridiem: false
                   }}
                   eventContent={(eventInfo:EventContentArg) => {
-                    const start = eventInfo.event.start;
-                    const end = eventInfo.event.end;
-                    
+                    const start = fullCalendarEvents.find((item) => item.id == eventInfo.event.id)?.start
+                    const end = fullCalendarEvents.find((item) => item.id == eventInfo.event.id)?.end
+
                     const timeFormat: Intl.DateTimeFormatOptions = {
                       day: '2-digit',      // แสดงเลขวัน เช่น 27
                       month: '2-digit',    // แสดงเลขเดือน เช่น 05
@@ -435,7 +432,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
                     return (
                       <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden bg-black/50">
-                          {start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)} {eventInfo.event.title}
+                        {start?.toLocaleTimeString([], timeFormat)? start?.toLocaleTimeString([], timeFormat) : eventInfo.event.start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)? end?.toLocaleTimeString([], timeFormat) : eventInfo.event.end?.toLocaleTimeString([], timeFormat)} : {eventInfo.event.title}
                       </div>
                     );
                   }}

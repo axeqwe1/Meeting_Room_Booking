@@ -1,28 +1,30 @@
 // src/lib/api/rfid.ts
-import { LoginRequest } from '../types/RequestDTO';
+import { useAlert } from '../context/AlertContext';
+import { CreateBookingRequest, CreateRoomRequest, LoginRequest, UpdateBookingRequest, UpdateRoomRequest } from '../types/RequestDTO';
 import { LoginResponse } from '../types/ResponseDTO';
 import { apiService } from './axios/axios';
 
-
-export const SignIn = async (data:LoginRequest): Promise<any | undefined> => {
+export const GetAllBooking = async (): Promise<any | undefined> => {
     try{
-        const res = await apiService.post('/Auth/signin',data)
-        console.log(res)
+        const res = await apiService.get('/Booking/GetAll')
         return res
-    }catch(ex:any){
-                // ถ้าเป็น 401 ไม่ต้อง log
+    }
+    catch(ex:any){
+        // ถ้าเป็น 401 ไม่ต้อง log
         if (ex.response && ex.response.status === 401) {
-            // อาจคืนค่า null หรือ undefined ก็ได้
+        // อาจคืนค่า null หรือ undefined ก็ได้
             return null
         }
         // error อื่น log ปกติ
         console.error(ex)
+        return ex.status
     }
 }
 
-export const SignOut = async () => {
+export const GetBookingId = async (id:number): Promise<any | undefined> => {
     try{
-        await apiService.post('/Auth/logout')
+        const res =  await apiService.get('/Booking/GetById/' + id)
+        return res
     }
     catch(ex:any){
                 // ถ้าเป็น 401 ไม่ต้อง log
@@ -32,35 +34,52 @@ export const SignOut = async () => {
         }
         // error อื่น log ปกติ
         console.error(ex)
+        return ex.status
     }
 }
 
-export const Me = async ():Promise<any> => {
-    try {
-        const res = await apiService.get('/Auth/me')
-        return res
-    } catch (ex: any) {
-        // ถ้าเป็น 401 ไม่ต้อง log
-        if (ex.response && ex.response.status === 401) {
-            // อาจคืนค่า null หรือ undefined ก็ได้
-            return null
-        }
-        // error อื่น log ปกติ
-        console.error(ex)
-    }
-}
-
-export const refreshToken = async ():Promise<any> => {
+export const CreateBooking = async (data:CreateBookingRequest): Promise<any | undefined> => {
     try{
-        const res = await apiService.post('/Auth/refresh')
+        const res = await apiService.post('/Booking/CreateBooking',data)
         return res
-    } catch (ex: any) {
-        // ถ้าเป็น 401 ไม่ต้อง log
+    }
+    catch(ex:any){
         if (ex.response && ex.response.status === 401) {
             // อาจคืนค่า null หรือ undefined ก็ได้
             return null
         }
-        // error อื่น log ปกติ
-        // console.error(ex)
+        console.error(ex)
+        return ex.status
+    }
+}
+
+export const UpdateBooking = async (data:UpdateBookingRequest): Promise<any | undefined> => {
+    try{
+        const res = await apiService.put('/Booking/UpdateBooking', data)
+        return res
+    }
+    catch(ex:any){
+        if (ex.response && ex.response.status === 401) {
+            // อาจคืนค่า null หรือ undefined ก็ได้
+            return null
+        }
+        console.error(ex)
+        return ex.status
+    }
+}
+
+export const DeleteBooking = async (id:number):Promise<any> => {
+    try{
+        const res = await apiService._delete('/Booking/DeleteBooking/' + id)
+        return res
+    }
+    catch(ex:any)
+    {
+        if (ex.response && ex.response.status === 401) {
+            // อาจคืนค่า null หรือ undefined ก็ได้
+            return null
+        }
+        console.error(ex)
+        return ex
     }
 }

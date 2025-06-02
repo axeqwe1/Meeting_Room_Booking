@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Room } from '../types';
 import { Users, MapPin, MonitorSmartphone } from 'lucide-react';
+import { GetAllRoom } from '../api/Room';
 
 interface RoomListProps {
   rooms: Room[];

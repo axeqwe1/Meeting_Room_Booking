@@ -9,37 +9,13 @@ import { CreateRoom, DeleteRoom, GetAllRoom, UpdateRoom } from '../api/Room';
 import { CreateRoomRequest, UpdateRoomRequest } from '../types/RequestDTO';
 import CustomAlert from '../components/CustomeAlert';
 import {useAlert} from '../context/AlertContext'
+import { useRoomContext } from '../context/RoomContext';
 const RoomManagement: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
+  const {allRooms,refreshData} = useRoomContext()
   const [showRoomForm, setShowRoomForm] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
   const {showAlert} = useAlert()
-  const fetchRoomData = async () => {
-      const res = await GetAllRoom()
-      const room = res.data
-      console.log(res)
-      let arrRoom:Room[] = []
-      room.forEach((item:any) => {
-        let amentityArr:string[] = []
-
-        item.amentities.forEach((item:any) => {
-          amentityArr.push(item.amenity_name)
-        })
-        // console.log(amentityArr)
-        const data:Room = {
-          id:item.roomId,
-          name:item.roomname,
-          capacity:item.capacity,
-          location:item.location,
-          factory:item.factory,
-          amenities:amentityArr,
-          imageUrl:item.imageUrl,
-          color:''
-        }
-        arrRoom.push(data)
-      });
-      setRooms(arrRoom)
-    }
 
   const handleAddRoom = async (room: Room) => {
     
@@ -60,6 +36,7 @@ const RoomManagement: React.FC = () => {
           iconColor: 'text-green-500',
           iconSize: 80
         });
+        refreshData()
     }
     if(res.data.error != null)
       {
@@ -71,7 +48,6 @@ const RoomManagement: React.FC = () => {
           iconSize: 80
         });
     }
-    fetchRoomData()
     setShowRoomForm(false);
   };
 
@@ -90,15 +66,16 @@ const RoomManagement: React.FC = () => {
     if(res.status == 200){
         showAlert({
           title: 'Success',
-          message: 'Add New Room Success',
+          message: 'Update Room Success',
           icon: CircleCheckIcon,
           iconColor: 'text-green-500',
           iconSize: 80
         });
+        refreshData()
     }else{
       showAlert({
         title: 'Failed',
-        message: `Add New Room Failed : ${res.message}`,
+        message: `Update Room Failed : ${res.message}`,
         icon: CircleX,
         iconColor: 'text-red-500',
         iconSize: 80
@@ -108,13 +85,12 @@ const RoomManagement: React.FC = () => {
     if(res.data.error != null){
         showAlert({
           title: 'Failed',
-          message: `Add New Room Failed : ${res.data.error}`,
+          message: `Update Room Failed : ${res.data.error}`,
           icon: CircleX,
           iconColor: 'text-red-500',
           iconSize: 80
         });
     }
-    fetchRoomData()
     setShowRoomForm(false);
     setSelectedRoom(undefined);
   };
@@ -139,17 +115,17 @@ const RoomManagement: React.FC = () => {
     if(res.status == 200){
       showAlert({
         title: 'Success',
-        message: 'Add New Room Success',
+        message: 'Delete Room Success',
         icon: CircleCheckIcon,
         iconColor: 'text-green-500',
         iconSize: 80
       });
-      fetchRoomData()
+      refreshData()
     }
     else{
       showAlert({
         title: 'Failed',
-        message: `Add New Room Failed : ${res.message}`,
+        message: `Delete Room Failed : ${res.message}`,
         icon: CircleX,
         iconColor: 'text-red-500',
         iconSize: 80
@@ -158,7 +134,7 @@ const RoomManagement: React.FC = () => {
     if(res.data.error != null){
         showAlert({
           title: 'Failed',
-          message: `Add New Room Failed : ${res.data.error}`,
+          message: `Delete Room Failed : ${res.data.error}`,
           icon: CircleX,
           iconColor: 'text-red-500',
           iconSize: 80
@@ -169,9 +145,6 @@ const RoomManagement: React.FC = () => {
     setShowRoomForm(false)
   }
 
-  useEffect(() => {
-    fetchRoomData()
-  },[])
 
   return (
     <>
@@ -191,7 +164,7 @@ const RoomManagement: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rooms.map(room => (
+          {allRooms.map(room => (
             <div key={room.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="h-48 overflow-hidden">
                 <img

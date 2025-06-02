@@ -29,7 +29,7 @@ export interface CreateBookingRequest {
     roomId:number,
     user_id:string,
     title:string,
-    descripsion:string,
+    description:string,
     start_date:Date,
     end_date:Date,
     attendees:string[]
@@ -40,7 +40,7 @@ export interface UpdateBookingRequest {
     roomId:number,
     user_id:string,
     title:string,
-    descripsion:string,
+    description:string,
     start_date:Date,
     end_date:Date,
     attendees:string[]

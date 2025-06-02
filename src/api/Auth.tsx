@@ -3,7 +3,6 @@ import { LoginRequest } from '../types/RequestDTO';
 import { LoginResponse } from '../types/ResponseDTO';
 import { apiService } from './axios/axios';
 
-
 export const SignIn = async (data:LoginRequest): Promise<any | undefined> => {
     try{
         const res = await apiService.post('/Auth/signin',data)

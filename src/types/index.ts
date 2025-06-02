@@ -10,7 +10,7 @@ export interface Room {
 }
 
 export interface Booking {
-  id: string;
+  id: number;
   roomId: number;
   title: string;
   start: Date;
@@ -21,7 +21,7 @@ export interface Booking {
 }
 
 export interface CalendarEvent {
-  id: string;
+  id: number;
   title: string;
   start: Date;
   end: Date;

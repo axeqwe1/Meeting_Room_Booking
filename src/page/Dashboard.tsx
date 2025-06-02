@@ -9,9 +9,12 @@ import EventDetails from '../components/EventDetails';
 import MobileMenu from '../components/MobileMenu';
 import { pre } from 'motion/react-client';
 import { useAlert } from '../context/AlertContext';
-import { CircleAlert, X } from 'lucide-react';
+import { CircleAlert, CircleAlertIcon, CircleCheck, CircleCheckIcon, CircleX, X } from 'lucide-react';
 import { useRoomContext  } from '../context/RoomContext';
 import { useSettings } from '../context/SettingContext';
+import { CreateBooking, DeleteBooking, UpdateBooking } from '../api/Booking';
+import { CreateBookingRequest, UpdateBookingRequest } from '../types/RequestDTO';
+import dayjs from 'dayjs';
 
 const Dashboard: React.FC = () => {
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -38,7 +41,8 @@ const Dashboard: React.FC = () => {
     setSelectedEvent,
     selectedEditRoom,
     setSelectedEditRoom,
-    roomColors
+    roomColors,
+    refreshData
   } = useRoomContext();
   
   useEffect(() => {
@@ -136,25 +140,42 @@ const Dashboard: React.FC = () => {
  
 
   const handleCreateBooking = (booking: Partial<Booking>) => {
-    if(booking.id != null && booking.id != ''){
-      console.log(booking)
-      setAllBookings((prev) => {
-        const excludeBookId = prev.filter((item) => item.id != booking.id)
-        const existBooking = prev.find((item) => item.id == booking.id)
-        if(existBooking != null){
-          existBooking.id = booking.id ? booking.id : 'null';
-          existBooking.roomId = booking.roomId ? booking.roomId : 0;
-          existBooking.description = booking.description;
-          existBooking.attendees = booking.attendees;
-          existBooking.start = booking.start ? booking.start : new Date
-          existBooking.end = booking.end ? booking.end : new Date
-          existBooking.title = booking.title ? booking.title : 'null'
-          
-          return [...excludeBookId,existBooking]
-        }else{
-          return prev
+    console.log(booking)
+    if(booking.id != null || booking.id != undefined){
+      const updateData:UpdateBookingRequest = {
+          bookingId:booking.id,
+          roomId:booking.roomId || 0,
+          user_id:booking.userId || "",
+          title:booking.title || "",
+          description:booking.description || "",
+          start_date:booking.start || new Date(),
+          end_date:booking.end || new Date(),
+          attendees:booking.attendees || []
+      }
+      const updateBooking = async (data:UpdateBookingRequest) => {
+        const res = await UpdateBooking(data)
+        
+        if(res.status == 200){
+            showAlert({
+              title: 'Success',
+              message: 'Update Booking Success',
+              icon: CircleCheck,
+              iconColor: 'text-green-500',
+              iconSize: 80
+            });
+            refreshData()
         }
-      });
+        if(res.data.error != null){
+            showAlert({
+              title: 'Failed',
+              message: `Update Booking Failed : ${res.data.error}`,
+              icon: CircleX,
+              iconColor: 'text-red-500',
+              iconSize: 80
+            });
+        }
+      }
+      updateBooking(updateData)
       setSelectedRoom(allRooms.find((item) => item.id == booking.roomId))
       setTimeout(() => {
         if(defaultRoom != null){
@@ -172,18 +193,42 @@ const Dashboard: React.FC = () => {
         }
       },100)
     }else{
-      const newBooking: Booking = {
-        id: `booking_${Date.now()}`,
+      const newBooking: CreateBookingRequest = {
         roomId: booking?.roomId || 0,
         title: booking.title || 'Untitled Meeting',
-        start: booking.start || new Date(),
-        end: booking.end || new Date(),
-        userId: 'current_user',
-        description: booking.description,
-        attendees: booking.attendees
+        start_date: booking.start || new Date(),
+        end_date: booking.end || new Date(),
+        user_id: 'current_user',
+        description: booking.description || "",
+        attendees: booking.attendees || []
       };
+      console.log(newBooking)
       setSelectedRoom(allRooms.find((item) => item.id == booking.roomId))
-      setAllBookings([...allBookings, newBooking]);
+      const createBooking = async (data:CreateBookingRequest) => {
+        const res = await CreateBooking(data)
+          if(res.status == 200){
+              showAlert({
+                title: 'Success',
+                message: 'Add New Booking Success',
+                icon: CircleCheck,
+                iconColor: 'text-green-500',
+                iconSize: 80
+              });
+              refreshData()
+          }
+          if(res.data.error != null)
+            {
+              showAlert({
+                title: 'Failed',
+                message: `Add New Booking Failed : ${res.data.error}`,
+                icon: CircleX,
+                iconColor: 'text-red-500',
+                iconSize: 80
+              });
+          }
+      }
+      createBooking(newBooking)
+      // setAllBookings([...allBookings, newBooking]);
       setTimeout(() => {
         if(defaultRoom != null){
             setShowBookingForm(false);
@@ -229,11 +274,54 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDeleteBooking = (bookingId: string) => {
-    setAllBookings(allBookings.filter(b => b.id !== bookingId));
-    setSelectedEvent(undefined);
-    setSelectedBooking(undefined);
-  };
+    const handleDeleteBooking = (Id: number) => {
+        showAlert({
+        title: 'Warning',
+        message: `Are you sure you want to delete this booking?`,
+        icon: CircleAlertIcon,
+        iconColor: 'text-yellow-500',
+        iconSize: 80,
+        mode: "confirm",
+        onConfirm() {
+          SubmitDeleteBooking(Id)
+        },
+      });
+    };
+    const SubmitDeleteBooking = async (Id:number) => {
+        const res = await DeleteBooking(Id)
+        console.log(res)
+      if(res.status == 200){
+        showAlert({
+          title: 'Success',
+          message: 'Delete Booking Success',
+          icon: CircleCheckIcon,
+          iconColor: 'text-green-500',
+          iconSize: 80
+        });
+        setSelectedEvent(undefined);
+        setSelectedBooking(undefined);
+        setAllBookings(allBookings.filter(b => b.id !== Id));
+        refreshData()
+      }
+      else{
+        showAlert({
+          title: 'Failed',
+          message: `Delete Booking Failed : ${res.message}`,
+          icon: CircleX,
+          iconColor: 'text-red-500',
+          iconSize: 80
+        });
+      }
+      if(res.data.error != null){
+          showAlert({
+            title: 'Failed',
+            message: `Delete Booking Failed : ${res.data.error}`,
+            icon: CircleX,
+            iconColor: 'text-red-500',
+            iconSize: 80
+          });
+      }
+    }
 
   const handleCloseEventDetails = () => {
     // setSelectedEvent(undefined);
@@ -300,7 +388,7 @@ const Dashboard: React.FC = () => {
       
       {/* Booking Form Modal */}
       {showBookingForm && (
-        <div className="fixed inset-0 z-40 overflow-y-auto">
+        <div className="fixed inset-0 z-20 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
@@ -333,7 +421,7 @@ const Dashboard: React.FC = () => {
       
       {/* Event Details Modal */}
       {selectedEvent && selectedBooking && showEventDetails && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-20 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>

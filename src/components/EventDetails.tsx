@@ -9,7 +9,7 @@ interface EventDetailsProps {
   room: Room;
   onClose: () => void;
   onEdit: (booking: Booking) => void;
-  onDelete: (bookingId: string) => void;
+  onDelete: (bookingId: number) => void;
 }
 
 const EventDetails: React.FC<EventDetailsProps> = ({

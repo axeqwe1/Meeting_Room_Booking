@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Room, Booking } from '../../types';
-import { bookings } from '../../data/dummyData';
+// import { bookings } from '../../data/dummyData';
 import { format } from 'date-fns';
 import { X, Users, Clock, CalendarDays, CircleCheck, CircleOff } from 'lucide-react';
 import { resolve } from 'path';
@@ -8,6 +8,8 @@ import { rejects } from 'assert';
 import CustomAlert from '../CustomeAlert';
 import { useAlert } from '../../context/AlertContext';
 import { useScrollLock } from "../../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
+import { useAuth } from '../../context/AuthContext';
+import { useRoomContext } from '../../context/RoomContext';
 interface BookingFormProps {
   room?: Room;
   initialDate?: Date;
@@ -29,7 +31,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 }) => {
   useScrollLock()
   const [booking, setBooking] = useState<Partial<Booking>>({
-    id:'',
+    id: undefined,
     roomId: room?.id,
     title: '',
     description: '',
@@ -41,7 +43,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const {showAlert} = useAlert();
   const [validationAlert,setValidationAlert] = useState<boolean>(false);
   const [attendeeInput, setAttendeeInput] = useState('');
-
+  const {allBookings} = useRoomContext()
   useEffect(() => {
     if(BookingData != null){
       setBooking({
@@ -56,7 +58,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
     else{
       setBooking({
-        id:'',
+        id:undefined,
         roomId: SelectedRoom?.id,
         start: initialDate,
         end: initialEndDate || (initialDate ? new Date(initialDate.getTime() + 60 * 60 * 1000) : undefined),
@@ -106,6 +108,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
     setBooking(prev => ({ ...prev, [name]: new Date(value) }));
   };
 
+  const {user} = useAuth()
+  useEffect(() => {
+      setBooking(prev => ({
+        ...prev,
+        attendees: [...(prev.attendees || []), user?.fullname? user?.fullname : ""]
+      }));
+  },[])
+
   const handleAddAttendee = () => {
     if (attendeeInput.trim() && booking.attendees) {
       setBooking(prev => ({
@@ -126,8 +136,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const validation = ():Promise<{success:boolean; message:string}> => {
     return new Promise((resolve,reject) => {
       try {
-      const iniStartDate = booking.start
-      const iniEndDate = booking.end
+      const iniStartDate = initialDate
+      const iniEndDate = initialEndDate
       if(SelectedRoom == null){
         resolve({ 
           success: false, 
@@ -135,15 +145,15 @@ const BookingForm: React.FC<BookingFormProps> = ({
         });
         return;
       }
-      const bookData = bookings.filter((item) => item.roomId == SelectedRoom?.id)
+      const bookData = allBookings.filter((item) => item.roomId == SelectedRoom?.id)
       console.log(bookData)
       // ตรวจสอบการซ้อนทับของช่วงเวลา
       if(bookData != null && iniStartDate != null && iniEndDate != null){
         const isOverlapping = bookData.some((booking) => {
           return (
-            (iniStartDate >= booking.start && iniStartDate < booking.end) || // เริ่มในช่วงที่จองแล้ว
-            (iniEndDate > booking.start && iniEndDate <= booking.end) || // สิ้นสุดในช่วงที่จองแล้ว
-            (iniStartDate <= booking.start && iniEndDate >= booking.end) // ครอบคลุมช่วงที่จองแล้ว
+            (iniStartDate >= new Date(booking.start) && iniStartDate < new Date(booking.end)) || // เริ่มในช่วงที่จองแล้ว
+            (iniEndDate > new Date(booking.start) && iniEndDate <= new Date(booking.end)) || // สิ้นสุดในช่วงที่จองแล้ว
+            (iniStartDate <= new Date(booking.start) && iniEndDate >= new Date(booking.end)) // ครอบคลุมช่วงที่จองแล้ว
           );
         });
         

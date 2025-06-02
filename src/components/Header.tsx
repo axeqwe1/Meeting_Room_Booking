@@ -2,11 +2,12 @@ import React from 'react';
 import { Calendar, User, Bell, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MobileMenu from './MobileMenu';
+import { useAuth } from '../context/AuthContext';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const navigate = useNavigate();
-
+  const {user} = useAuth()
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
@@ -34,7 +35,7 @@ const Header: React.FC = () => {
             <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
               <User className="h-5 w-5" />
             </div>
-            <span className="ml-2 text-sm font-medium text-gray-700 hidden sm:inline-block">John Doe</span>
+            <span className="ml-2 text-sm font-medium text-gray-700 hidden sm:inline-block">{user?.fullname? user.fullname : ""}</span>
           </div>
         </div>
       </div>

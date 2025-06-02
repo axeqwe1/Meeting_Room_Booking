@@ -4,20 +4,21 @@ import { Room } from '../types';
 import { rooms } from '../data/dummyData';
 import { Users, MapPin } from 'lucide-react';
 import { useSettings } from '../context/SettingContext';
+import { GetAllRoom } from '../api/Room';
+import { useRoomContext } from '../context/RoomContext';
 
 const Settings: React.FC = () => {
 
   const {defaultRoom,setDefaultRoom} = useSettings()
-
+  const [room,setRoom] = useState <Room[]>([])
+  const {allRooms} = useRoomContext()
   const handleSetDefaultRoom = (room: Room | null) => {
-    
     if (room) {
         setDefaultRoom(room);
     } else {
         setDefaultRoom(null)
     }
   };
-
   return (
     <>
       <div className="container mx-auto px-4 py-6">
@@ -50,7 +51,7 @@ const Settings: React.FC = () => {
           
           {defaultRoom === null && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {rooms.map((room) => (
+              {allRooms.map((room) => (
                 <div
                   key={room.id}
                   onClick={() => handleSetDefaultRoom(room)}

@@ -6,7 +6,6 @@ import { LoginRequest } from "../types/RequestDTO";
 
 interface AuthContextType {
     user: User | null;
-    setUser: (user: User | null) => void;
     login: (data: LoginRequest) => Promise<boolean>;
     logout: () => Promise<void>;
     isAuthenticated: boolean;
@@ -39,7 +38,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             try {
                 const res = await Me();
                 if (res && res.data) {
-                    setUser(res.data);
+                    const userDetails = JSON.parse(localStorage.getItem('user_details') || '{}')
+                    const user:User = {
+                        user_id:userDetails.user_id,
+                        fullname:userDetails.full_name,
+                        factorie:userDetails.factory,
+                        department:userDetails.department,
+                    }
+                    setUser(user);
                 } else {
                     setUser(null);
                 }
@@ -67,7 +73,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 // หลัง login แล้วโหลด user อีกรอบ
                 const profile = await Me();
                 if (profile && profile.data) {
-                    setUser(profile.data);
+                    const data = response.data.userDetail
+                    localStorage.setItem('user_details', JSON.stringify(data));
+                    const userDetails = JSON.parse(localStorage.getItem('user_details') || '{}')
+                    const user:User = {
+                        user_id:userDetails.user_id,
+                        fullname:userDetails.full_name,
+                        factorie:userDetails.factory,
+                        department:userDetails.department,
+                    }
+                    setUser(user);
                 }
                 return true;
             } else {
@@ -83,6 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // logout: เรียก API logout และ clear user
     const logout = async () => {
         await SignOut();
+        localStorage.removeItem('user_details');
         setUser(null);
     };
 
@@ -90,7 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const isAuthenticated = !!user && !loading;
 
     return (
-        <AuthContext.Provider value={{ user, setUser, login, logout, isAuthenticated,loading }}>
+        <AuthContext.Provider value={{ user, login, logout, isAuthenticated,loading }}>
             {loading ? (
                 <div className="flex justify-center items-center h-screen">
                 <div className="loading loading-spinner loading-lg"></div>
