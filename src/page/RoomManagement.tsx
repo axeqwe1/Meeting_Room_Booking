@@ -17,6 +17,9 @@ const RoomManagement: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
   const {showAlert} = useAlert()
 
+  useEffect(() => {
+    refreshData()
+  },[])
   const handleAddRoom = async (room: Room) => {
     
     const data:CreateRoomRequest = {

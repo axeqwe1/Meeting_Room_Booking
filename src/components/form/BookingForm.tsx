@@ -63,7 +63,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         start: initialDate,
         end: initialEndDate || (initialDate ? new Date(initialDate.getTime() + 60 * 60 * 1000) : undefined),
         description: '',
-        attendees: [],
+        attendees: [...([]), user?.fullname? user?.fullname : ""]  ,
         title: '',
       })
     }
@@ -109,12 +109,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
   };
 
   const {user} = useAuth()
-  useEffect(() => {
-      setBooking(prev => ({
-        ...prev,
-        attendees: [...(prev.attendees || []), user?.fullname? user?.fullname : ""]
-      }));
-  },[])
 
   const handleAddAttendee = () => {
     if (attendeeInput.trim() && booking.attendees) {

@@ -13,6 +13,7 @@ import { EventContentArg } from '@fullcalendar/core/index.js';
 import { useOutletContext } from 'react-router-dom';
 import '../style/custom-select.css'; // import css ที่เราเขียน
 import { useSettings } from '../context/SettingContext';
+import { useRoomContext } from '../context/RoomContext';
 
 
 interface CalendarViewProps {
@@ -40,12 +41,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [allRooms] = useState<Room[]>(rooms);
   const { defaultRoom } = useSettings()
+  const {selectedFactories} = useRoomContext()
+  const dropdownRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     setTimeout(() => {
       calendarRef.current?.getApi().updateSize();
     }, 300); // match Sidebar transition
   }, [collapsed]);
   // แปลง events ให้เป็นรูปแบบของ FullCalendar
+
+  const handleSelectFactory = (factory: string) => {
+    selectedFactories(factory);
+    console.log('Selected factory:', factory);
+
+    // โฟกัสกลับไปยังปุ่มแล้ว blur
+    setTimeout(() => {
+      (document.activeElement as HTMLElement)?.blur();
+    }, 0);
+  };
+
   const fullCalendarEvents = useMemo(() => {
     const filteredEvents = selectedRoomIdFilter
       ? events.filter(event => event.roomId === selectedRoomIdFilter)
@@ -180,7 +194,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           >
             test
           </button> */}
-          
+
           <button 
             onClick={() => handleNavigate('prev')}
             className="hover:cursor-pointer p-1.5 rounded-md hover:bg-gray-100"
@@ -196,6 +210,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           <h2 className="text-lg font-semibold text-gray-800">
             {getTitle()}
           </h2>
+          <div className="dropdown dropdown-bottom">
+            <div tabIndex={0} role="button" className="btn btn-accent text-white m-1" ref={dropdownRef}>Choose Factory ⬇️</div>
+            <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+              {['All', 'YPT', 'GNX'].map((factory) => (
+                <li key={factory}>
+                  <a onClick={() => handleSelectFactory(factory)}>{factory}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
         
         <div className="flex border border-gray-300 rounded-md overflow-hidden w-full sm:w-auto">

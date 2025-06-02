@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { User } from "../types/user";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Me, SignIn, SignOut } from "../api/Auth";
 import { LoginRequest } from "../types/RequestDTO";
 
@@ -45,6 +45,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         factorie:userDetails.factory,
                         department:userDetails.department,
                     }
+                    console.log('Auth')
                     setUser(user);
                 } else {
                     setUser(null);
@@ -65,6 +66,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         fetchMe();
     }, []);
 
+    // useEffect(() => {
+    // const localUser = localStorage.getItem('user_details');
+    // if (localUser) {
+    //     try {
+    //     const user: User = JSON.parse(localUser);
+    //     setUser(user); // 👈 โหลดเข้า context
+    //     } catch (err) {
+    //     console.error('Invalid user data in localStorage');
+    //     }
+    // }
+    // }, []);
     // login: เรียก API signin และโหลด user ใหม่
     const login = async (data: LoginRequest): Promise<boolean> => {
         try {
@@ -83,6 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         department:userDetails.department,
                     }
                     setUser(user);
+                    
                 }
                 return true;
             } else {

@@ -44,6 +44,9 @@ const Dashboard: React.FC = () => {
     roomColors,
     refreshData
   } = useRoomContext();
+  useEffect(() => {
+    refreshData()
+  },[])
   
   useEffect(() => {
     if (defaultRoom) {

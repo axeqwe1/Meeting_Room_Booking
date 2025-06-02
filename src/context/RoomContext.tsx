@@ -5,6 +5,7 @@ import { rooms, bookings } from '../data/dummyData';
 import { GetAllRoom } from '../api/Room';
 import { getConnection } from '../api/signalr/signalr';
 import { GetAllBooking } from '../api/Booking';
+import { useAuth } from './AuthContext';
 
 interface RoomContextType {
   allRooms: Room[];
@@ -23,6 +24,7 @@ interface RoomContextType {
   setSelectedEditRoom: (room: Room | undefined) => void;
   roomColors: { [roomId: string]: string };
   refreshData: () => void
+  selectedFactories: (data:string) => void
 }
 
 const RoomContext = createContext<RoomContextType | undefined>(undefined);
@@ -38,60 +40,70 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedEditRoom, setSelectedEditRoom] = useState<Room | undefined>();
   const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
   const [message,setMessage] = useState<string[]>([]);
-
+  const [factorie,selectedFactories] = useState<string>("All")
+  const {user} = useAuth()
   
   const fetchRoomData = async () => {
-    const res = await GetAllRoom()
-    const room = res.data
-    let arrRoom:Room[] = []
-    room.forEach((item:any) => {
-      let amentityArr:string[] = []
-
-      item.amentities.forEach((item:any) => {
-        amentityArr.push(item.amenity_name)
-      })
-      // console.log(amentityArr)
-      const data:Room = {
-        id:item.roomId,
-        name:item.roomname,
-        capacity:item.capacity,
-        location:item.location,
-        factory:item.factory,
-        amenities:amentityArr,
-        imageUrl:item.imageUrl,
-        color:''
-      }
-      arrRoom.push(data)
+    const res = await GetAllRoom();
+    const roomsData = res.data;
+    console.log(factorie)
+    const roomFilter = roomsData.filter((item: any) => {
+      if(user?.factorie === "All") {
+        if(factorie != "All"){
+          return factorie === item.factory
+        }else{
+          return true
+        }
+      }else{
+        return item.factory === user?.factorie
+      } 
     });
-    setAllRooms(arrRoom)
-  }
 
-  const fetchBookingData = async () => {
-    const res = await GetAllBooking()
-    const booking = res.data
-    console.log(booking)
-    let arrBooking:Booking[] = []
-    booking.forEach((item:any) => {
-      let attendees:string[] = []
-
-      item.attendeess.forEach((item:any) => {
-        attendees.push(item.user_name)
-      });
-
-      const data:Booking = {
-          id: item.bookingId,
-          roomId: item.roomId,
-          title: item.title,
-          start: item.start,
-          end: item.end,
-          userId: item.userId,
-          description: item.description,
-          attendees: attendees,
-      }
-      arrBooking.push(data)
+    const arrRoom: Room[] = roomFilter.map((item: any) => {
+      const amenitiesArr = item.amentities.map((a: any) => a.amenity_name);
+      return {
+        id: item.roomId,
+        name: item.roomname,
+        capacity: item.capacity,
+        location: item.location,
+        factory: item.factory,
+        amenities: amenitiesArr,
+        imageUrl: item.imageUrl,
+        color: '',
+      };
     });
-    setAllBookings(arrBooking)
-  }
+
+    setAllRooms(arrRoom);
+    return arrRoom; // <-- เพิ่ม return เพื่อใช้ใน fetchBookingData
+  };
+
+  const fetchBookingData = async (rooms: Room[]) => {
+    const res = await GetAllBooking();
+    const bookings = res.data;
+
+    // Filter bookings by roomIds from the filtered rooms
+    const filteredRoomIds = rooms.map(r => r.id);
+
+    const filteredBookings = bookings.filter((item: any) =>
+      filteredRoomIds.includes(item.roomId)
+    );
+
+    const arrBooking: Booking[] = filteredBookings.map((item: any) => {
+      const attendees = item.attendeess.map((a: any) => a.user_name);
+      return {
+        id: item.bookingId,
+        roomId: item.roomId,
+        title: item.title,
+        start: item.start,
+        end: item.end,
+        userId: item.userId,
+        description: item.description,
+        attendees: attendees,
+      };
+    });
+
+    setAllBookings(arrBooking);
+  };
 
   const connection = getConnection();
 
@@ -124,13 +136,10 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [connection]);
 
-  useEffect(() => {
-    refreshData()
-  },[])
 
-  const refreshData = () => {
-    fetchRoomData()
-    fetchBookingData()
+  const refreshData = async () => {
+    const rooms = await fetchRoomData();
+    await fetchBookingData(rooms);
   }
   const generateShuffledColors = () => {
     const colors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F97316', '#14B8A6'];
@@ -141,6 +150,10 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return colors;
   };
 
+  useEffect(() => {
+    refreshData()
+    console.log('refresh')
+  },[factorie])
 
   useEffect(() => {
     const shuffledColors = generateShuffledColors();
@@ -170,6 +183,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
         color: roomColors[booking.roomId] || '#999999'
       };
     });
+    console.log(calendarEvents)
     setEvents(calendarEvents);
     setSelectData(calendarEvents);
   }, [allBookings, allRooms, roomColors]);
@@ -192,7 +206,8 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSelectedBooking,
         setSelectedEditRoom,
         roomColors,
-        refreshData
+        refreshData,
+        selectedFactories
       }}
     >
       {children}
