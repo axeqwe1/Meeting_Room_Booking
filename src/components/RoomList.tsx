@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Room } from '../types';
 import { Users, MapPin, MonitorSmartphone } from 'lucide-react';
 import { GetAllRoom } from '../api/Room';
+import { useRoomContext } from '../context/RoomContext';
 
 interface RoomListProps {
   rooms: Room[];
@@ -10,6 +11,7 @@ interface RoomListProps {
 }
 
 const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId }) => {
+  const {loading} = useRoomContext()
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-200">
@@ -23,6 +25,8 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId
             className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${room.id === selectedRoomId ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
             onClick={() => onSelectRoom(room)}
           >
+            {loading && <div className="skeleton h-32 w-32"></div>}
+            {!loading && 
             <div className="flex items-start space-x-6">
               <div className="flex-shrink-0 w-20 h-16 rounded-md overflow-hidden">
                 <img 
@@ -31,7 +35,6 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId
                   className="w-full h-full object-cover"
                 />
               </div>
-              
               <div className="flex-1 min-w-0">
                 
                 <h4 className="text-base font-semibold text-gray-800 truncate"><span className='inline-block w-3 h-3 mr-1 rounded-full' style={{backgroundColor: room.color }}></span> {room.name}</h4>
@@ -65,9 +68,9 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onSelectRoom, selectedRoomId
                   </div>
                 </div>
               </div>
-              
-
             </div>
+            }
+
           </div>
         ))}
       </div>

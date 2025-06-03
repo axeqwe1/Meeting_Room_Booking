@@ -12,14 +12,11 @@ import {useAlert} from '../context/AlertContext'
 import { useRoomContext } from '../context/RoomContext';
 const RoomManagement: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
-  const {allRooms,refreshData} = useRoomContext()
+  const {allRooms} = useRoomContext()
   const [showRoomForm, setShowRoomForm] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
   const {showAlert} = useAlert()
-
-  useEffect(() => {
-    refreshData()
-  },[])
+  const {refreshRoom} = useRoomContext()
   const handleAddRoom = async (room: Room) => {
     
     const data:CreateRoomRequest = {
@@ -39,7 +36,7 @@ const RoomManagement: React.FC = () => {
           iconColor: 'text-green-500',
           iconSize: 80
         });
-        refreshData()
+        refreshRoom()
     }
     if(res.data.error != null)
       {
@@ -74,7 +71,7 @@ const RoomManagement: React.FC = () => {
           iconColor: 'text-green-500',
           iconSize: 80
         });
-        refreshData()
+        refreshRoom()
     }else{
       showAlert({
         title: 'Failed',
@@ -123,7 +120,7 @@ const RoomManagement: React.FC = () => {
         iconColor: 'text-green-500',
         iconSize: 80
       });
-      refreshData()
+      refreshRoom()
     }
     else{
       showAlert({

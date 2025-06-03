@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Room, Booking, CalendarEvent } from '../types';
 import { rooms, bookings } from '../data/dummyData';
 import Layout from '../components/Layout';
@@ -15,6 +15,7 @@ import { useSettings } from '../context/SettingContext';
 import { CreateBooking, DeleteBooking, UpdateBooking } from '../api/Booking';
 import { CreateBookingRequest, UpdateBookingRequest } from '../types/RequestDTO';
 import dayjs from 'dayjs';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard: React.FC = () => {
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -24,6 +25,7 @@ const Dashboard: React.FC = () => {
   const [showRoomList, setShowRoomList] = useState(false);
   const [modalRoomlist,setModalRoomlist] = useState(false);
   const {defaultRoom} = useSettings()
+  const {user} = useAuth()
   // const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
   const {showAlert} = useAlert()
   const {
@@ -42,25 +44,19 @@ const Dashboard: React.FC = () => {
     selectedEditRoom,
     setSelectedEditRoom,
     roomColors,
-    refreshData
+    refreshData,
+    refreshBooking
   } = useRoomContext();
-  useEffect(() => {
+
+  
+  const refresh = useCallback(async () => {
     refreshData()
   },[])
-  
+
   useEffect(() => {
-    if (defaultRoom) {
-      console.log('Selecting default room:', defaultRoom);
-      // เปลี่ยนห้องใหม่
-      setSelectedRoom(defaultRoom);
-      // แสดง event เฉพาะของห้องนี้
-      const filtered = events.filter((event) => event.roomId === defaultRoom.id);
-      setSelectData(filtered);
-    } else {
-      setSelectedRoom(undefined); 
-      setSelectData(events); // แสดง event ทั้งหมด
-    }
-  }, [defaultRoom,events]);
+    refresh()
+  },[refresh])
+
   const handleSelectEvent = (event: CalendarEvent,view:string) => {
     // if(view != 'month'){
       setSelectedEvent(event);
@@ -148,11 +144,11 @@ const Dashboard: React.FC = () => {
       const updateData:UpdateBookingRequest = {
           bookingId:booking.id,
           roomId:booking.roomId || 0,
-          user_id:booking.userId || "",
+          user_id:user?.fullname || "",
           title:booking.title || "",
           description:booking.description || "",
-          start_date:booking.start || new Date(),
-          end_date:booking.end || new Date(),
+          start_date: booking.start ? new Date(booking.start.toLocaleString()) : new Date(),
+          end_date:booking.end ? new Date(booking.end.toLocaleString()) : new Date(),
           attendees:booking.attendees || []
       }
       const updateBooking = async (data:UpdateBookingRequest) => {
@@ -166,7 +162,7 @@ const Dashboard: React.FC = () => {
               iconColor: 'text-green-500',
               iconSize: 80
             });
-            refreshData()
+            await refreshBooking()
         }
         if(res.data.error != null){
             showAlert({
@@ -199,9 +195,9 @@ const Dashboard: React.FC = () => {
       const newBooking: CreateBookingRequest = {
         roomId: booking?.roomId || 0,
         title: booking.title || 'Untitled Meeting',
-        start_date: booking.start || new Date(),
-        end_date: booking.end || new Date(),
-        user_id: 'current_user',
+        start_date: booking.start ? new Date(booking.start.toLocaleString()) : new Date(),
+        end_date:booking.end ? new Date(booking.end.toLocaleString()) : new Date(),
+        user_id: user?.fullname || "",
         description: booking.description || "",
         attendees: booking.attendees || []
       };
@@ -217,7 +213,7 @@ const Dashboard: React.FC = () => {
                 iconColor: 'text-green-500',
                 iconSize: 80
               });
-              refreshData()
+              await refreshBooking()
           }
           if(res.data.error != null)
             {
@@ -303,8 +299,8 @@ const Dashboard: React.FC = () => {
         });
         setSelectedEvent(undefined);
         setSelectedBooking(undefined);
-        setAllBookings(allBookings.filter(b => b.id !== Id));
-        refreshData()
+        
+        await refreshBooking()
       }
       else{
         showAlert({

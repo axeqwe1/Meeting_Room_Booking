@@ -10,6 +10,7 @@ import { useAlert } from '../../context/AlertContext';
 import { useScrollLock } from "../../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
 import { useAuth } from '../../context/AuthContext';
 import { useRoomContext } from '../../context/RoomContext';
+import { parse } from 'date-fns';
 interface BookingFormProps {
   room?: Room;
   initialDate?: Date;
@@ -44,6 +45,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const [validationAlert,setValidationAlert] = useState<boolean>(false);
   const [attendeeInput, setAttendeeInput] = useState('');
   const {allBookings} = useRoomContext()
+  
   useEffect(() => {
     if(BookingData != null){
       setBooking({
@@ -105,7 +107,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setBooking(prev => ({ ...prev, [name]: new Date(value) }));
+
+    const parsed = parse(value, "yyyy-MM-dd'T'HH:mm", new Date());
+
+    setBooking(prev => ({
+      ...prev,
+      [name]: parsed,
+    }));
   };
 
   const {user} = useAuth()

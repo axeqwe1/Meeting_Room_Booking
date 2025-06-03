@@ -14,6 +14,7 @@ import { useOutletContext } from 'react-router-dom';
 import '../style/custom-select.css'; // import css ที่เราเขียน
 import { useSettings } from '../context/SettingContext';
 import { useRoomContext } from '../context/RoomContext';
+import { useAuth } from '../context/AuthContext';
 
 
 interface CalendarViewProps {
@@ -41,7 +42,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [allRooms] = useState<Room[]>(rooms);
   const { defaultRoom } = useSettings()
-  const {selectedFactories} = useRoomContext()
+  const {factorie,selectedFactories} = useRoomContext()
+  const {user} = useAuth()
   const dropdownRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     setTimeout(() => {
@@ -56,6 +58,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
     // โฟกัสกลับไปยังปุ่มแล้ว blur
     setTimeout(() => {
+      
       (document.activeElement as HTMLElement)?.blur();
     }, 0);
   };
@@ -210,16 +213,24 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           <h2 className="text-lg font-semibold text-gray-800">
             {getTitle()}
           </h2>
+          {user?.factorie == "All" &&           
           <div className="dropdown dropdown-bottom">
-            <div tabIndex={0} role="button" className="btn btn-accent text-white m-1" ref={dropdownRef}>Choose Factory ⬇️</div>
+            <div tabIndex={0} role="button" className="hover:cursor-pointer px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 w-[90px]" ref={dropdownRef}> {factorie ? factorie : "Choose Factory"} ⬇️</div>
             <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
               {['All', 'YPT', 'GNX'].map((factory) => (
                 <li key={factory}>
-                  <a onClick={() => handleSelectFactory(factory)}>{factory}</a>
+                  <a 
+                  onClick={() => handleSelectFactory(factory)}
+                  className={factorie === factory ? 'active bg-primary text-white' : ''}
+                  >
+                    {factory}
+                    </a>
                 </li>
               ))}
             </ul>
           </div>
+          }
+
         </div>
         
         <div className="flex border border-gray-300 rounded-md overflow-hidden w-full sm:w-auto">
