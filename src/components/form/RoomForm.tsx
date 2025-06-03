@@ -13,19 +13,20 @@ interface RoomFormProps {
 const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
   useScrollLock()
   const {user} = useAuth()
-  const [showDropdown,setShowDropdown] = useState<boolean>(true)
+  const [showDropdown,setShowDropdown] = useState<boolean>(false)
   const [isFactoryDropdownOpen, setIsFactoryDropdownOpen] = useState<boolean>(false)
   const factoryOptions = ['All', 'GNX', 'YPT']
   
   useEffect(() => {
-    // if(user != null){
-    //   if(user.factorie.toLowerCase() == 'all'){
-    //     setShowDropdown(true)
-        
-    //   }
-    // }else{
-    //   console.warn('loading user ....')
-    // }
+    if(user != null){
+      if(user.factorie.toLowerCase() == 'all'){
+        setShowDropdown(true)
+        console.log(showDropdown)
+      }
+    }else{
+      setShowDropdown(false)
+      console.warn('loading user ....')
+    }
   },[])
   const [formData, setFormData] = useState<Partial<Room>>({
     id: room?.id || 0,
@@ -46,15 +47,24 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
       [name]: type === 'number' ? parseInt(value) || 0 : value
     }));
   };
-
-    const handleFactorySelect = (factory: string) => {
-    setFormData(prev => ({
-      ...prev,
-      factory: factory
-    }));
-    setIsFactoryDropdownOpen(false);
+  useEffect(() => {
+    if(user?.factorie != "All"){
+      setFormData(prev => ({
+        ...prev,
+        factory:user?.factorie
+      }))
+    }
+  },[])
+  
+  const handleFactorySelect = (factory: string) => {
+    if(user?.factorie == "All"){
+      setFormData(prev => ({
+        ...prev,
+        factory: factory
+      }));
+      setIsFactoryDropdownOpen(false);
+    }
   };
-
   const handleAddAmenity = () => {
     if (amenityInput.trim() && formData.amenities) {
       setFormData(prev => ({

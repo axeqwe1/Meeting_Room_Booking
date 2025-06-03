@@ -136,7 +136,9 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      connection.on('ReceiveMessage', (message: string) => {
+      connection.on('ReceiveMessage', async (message: string) => {
+        console.log(message)
+        await refreshData()
         if (isMounted) {
           setMessage(prev => [...prev, message]);
         }

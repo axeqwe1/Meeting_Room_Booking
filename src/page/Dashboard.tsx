@@ -49,13 +49,13 @@ const Dashboard: React.FC = () => {
   } = useRoomContext();
 
   
-  const refresh = useCallback(async () => {
-    refreshData()
-  },[])
+  // const refresh = useCallback(async () => {
+  //   await refreshData()
+  // },[])
 
-  useEffect(() => {
-    refresh()
-  },[refresh])
+  // useEffect(() => {
+  //   refreshBooking()
+  // },[])
 
   const handleSelectEvent = (event: CalendarEvent,view:string) => {
     // if(view != 'month'){
@@ -162,7 +162,7 @@ const Dashboard: React.FC = () => {
               iconColor: 'text-green-500',
               iconSize: 80
             });
-            await refreshBooking()
+            // await refreshBooking()
         }
         if(res.data.error != null){
             showAlert({
@@ -213,7 +213,7 @@ const Dashboard: React.FC = () => {
                 iconColor: 'text-green-500',
                 iconSize: 80
               });
-              await refreshBooking()
+              // await refreshBooking()
           }
           if(res.data.error != null)
             {
@@ -300,7 +300,7 @@ const Dashboard: React.FC = () => {
         setSelectedEvent(undefined);
         setSelectedBooking(undefined);
         
-        await refreshBooking()
+        // await refreshBooking()
       }
       else{
         showAlert({
