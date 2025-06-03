@@ -45,13 +45,8 @@ const Dashboard: React.FC = () => {
     setSelectedEditRoom,
     roomColors,
     refreshData,
-    refreshBooking
+    
   } = useRoomContext();
-
-  
-  // const refresh = useCallback(async () => {
-  //   await refreshData()
-  // },[])
 
   // useEffect(() => {
   //   refreshBooking()

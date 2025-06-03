@@ -50,18 +50,24 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [factorie,selectedFactories] = useState<string>(user?.factorie ? user?.factorie : "All")
   const [loading,setLoading] = useState<boolean>(false)
   
-  
-  const fetchRoomData = useCallback(async (data:any[]) => {
-    const roomsData = data;
-    console.log(data)
+  // Sync factorie with user change (for first login or user switch)
+  useEffect(() => {
+    if (user?.factorie && user.factorie !== factorie) {
+      selectedFactories(user.factorie);
+    }
+  }, [user]);
+
+  // Fetch room data, filter by factorie
+  const fetchRoomData = useCallback(async (roomsData: any[]) => {
     const roomFilter = roomsData.filter((item: any) => {
+      // ถ้า user เป็น All ให้ filter ตาม factorie
       if(user?.factorie === "All") {
-        if(factorie != "All"){
-          return factorie === item.factory
+        if(factorie !== "All"){
+          return factorie === item.factory;
         }
-        return true
-      }else{
-        return item.factory === user?.factorie
+        return true;
+      } else {
+        return item.factory === user?.factorie;
       } 
     });
     const arrRoom: Room[] = roomFilter.map((item: any) => {
@@ -79,19 +85,15 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     setAllRooms(arrRoom);
-    return arrRoom; // <-- เพิ่ม return เพื่อใช้ใน fetchBookingData
-  },[user, factorie]);
+    return arrRoom;
+  }, [user, factorie]);
 
-  const fetchBookingData = useCallback(async (rooms: Room[],data:any[]) => {
-    const bookings = data;
-    console.log(bookings)
-    // Filter bookings by roomIds from the filtered rooms
+  // Fetch booking data and filter by rooms
+  const fetchBookingData = useCallback(async (rooms: Room[], bookingsData: any[]) => {
     const filteredRoomIds = rooms.map(r => r.id);
-
-    const filteredBookings = bookings.filter((item: any) =>
+    const filteredBookings = bookingsData.filter((item: any) =>
       filteredRoomIds.includes(item.roomId)
     );
-
     const arrBooking: Booking[] = filteredBookings.map((item: any) => {
       const attendees = item.attendeess.map((a: any) => a.user_name);
       return {
@@ -105,10 +107,9 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
         attendees: attendees,
       };
     });
-
     setAllBookings(arrBooking);
-    return arrBooking
-  },[]);
+    return arrBooking;
+  }, []);
 
   const connection = getConnection();
   // useEffect(() => {
@@ -123,42 +124,13 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
   //   }
   // }, [defaultRoom, events]);
 
-  useEffect(() => {
-    let isMounted = true;
 
-    const connect = async () => {
-      if (connection.state === 'Disconnected') {
-        try {
-          await connection.start();
-          console.log('SignalR connected.');
-        } catch (err) {
-          console.error('SignalR connection error:', err);
-        }
-      }
-
-      connection.on('ReceiveMessage', async (message: string) => {
-        console.log(message)
-        await refreshData()
-        if (isMounted) {
-          setMessage(prev => [...prev, message]);
-        }
-      });
-    };
-
-    connect();
-
-    // Cleanup
-    return () => {
-      isMounted = false;
-      connection.off('ReceiveMessage');
-    };
-  }, [connection]);
 
   useEffect(() => {
     if(defaultRoom != null) setSelectedRoom(defaultRoom)
   },[defaultRoom])
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     setLoading(true);
     const [roomsRes, bookingsRes] = await Promise.all([
       GetAllRoom(),
@@ -169,7 +141,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const roomFilter = await fetchRoomData(roomsData);
     await fetchBookingData(roomFilter, bookingsData);
     setLoading(false);
-  }; // ระบุ dependencies ที่จำเป็น
+  }, [fetchRoomData, fetchBookingData]);
 
   const refreshBooking = async () => {
     const bookres = await GetAllBooking()
@@ -180,6 +152,32 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const roomres = await GetAllRoom()
     await fetchRoomData(roomres.data)
   }
+    useEffect(() => {
+    const connection = getConnection();
+    let isMounted = true;
+    const connect = async () => {
+      if (connection.state === 'Disconnected') {
+        try {
+          await connection.start();
+          console.log('SignalR connected.');
+        } catch (err) {
+          console.error('SignalR connection error:', err);
+        }
+      }
+      connection.on('ReceiveMessage', async (message: string) => {
+        console.log(message);
+        if (isMounted) {
+          await refreshData();
+        }
+      });
+    };
+    connect();
+    // Cleanup
+    return () => {
+      isMounted = false;
+      connection.off('ReceiveMessage');
+    };
+  }, [refreshData]);
   const generateShuffledColors = () => {
     const colors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F97316', '#14B8A6'];
     for (let i = colors.length - 1; i > 0; i--) {
@@ -189,19 +187,17 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return colors;
   };
 
+  // Refresh เมื่อ user หรือ factorie เปลี่ยน (หรือ mount รอบแรก)
   useEffect(() => {
-    if (!user) return; // <<== เพิ่มเช็ก user
+    if (!user) return;
     refreshData();
-    refreshBooking();
-    refreshRoom();
-  }, [user]); // ให้ useEffect รันเมื่อ user เปลี่ยน
+  }, [user, factorie, refreshData]);
 
-    // ติดตามการเปลี่ยนแปลงของ factorie
-    useEffect(() => {
-      if (factorie) {
-        refreshData();
-      }
-    }, [factorie]);
+  // Sync selectedRoom กับ defaultRoom
+  useEffect(() => {
+    if(defaultRoom != null) setSelectedRoom(defaultRoom);
+  },[defaultRoom]);
+
 
   useEffect(() => {
     const shuffledColors = generateShuffledColors();
