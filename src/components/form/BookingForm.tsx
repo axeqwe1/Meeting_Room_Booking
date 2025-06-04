@@ -13,8 +13,8 @@ import { useRoomContext } from '../../context/RoomContext';
 import { parse } from 'date-fns';
 interface BookingFormProps {
   room?: Room;
-  initialDate?: Date;
-  initialEndDate?: Date;
+  initialDate?: string;
+  initialEndDate?: string;
   SelectedRoom?: Room;
   BookingData?: Booking;
   onSubmit: (booking: Partial<Booking>) => void;
@@ -37,7 +37,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     title: '',
     description: '',
     start: initialDate,
-    end: initialEndDate || (initialDate ? new Date(initialDate.getTime() + 60 * 60 * 1000) : undefined),
+    end: initialEndDate,
     attendees: []
   });
 
@@ -63,7 +63,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         id:undefined,
         roomId: SelectedRoom?.id,
         start: initialDate,
-        end: initialEndDate || (initialDate ? new Date(initialDate.getTime() + 60 * 60 * 1000) : undefined),
+        end: initialEndDate,
         description: '',
         attendees: [...([]), user?.fullname? user?.fullname : ""]  ,
         title: '',
@@ -135,51 +135,142 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }));
   };
 
-  const validation = ():Promise<{success:boolean; message:string}> => {
-    return new Promise((resolve,reject) => {
-      try {
-      const iniStartDate = initialDate
-      const iniEndDate = initialEndDate
-      if(SelectedRoom == null){
+interface ValidationResult {
+  success: boolean;
+  message: string;
+}
+
+const validation = (): Promise<ValidationResult> => {
+  return new Promise<ValidationResult>((resolve, reject) => {
+    try {
+      // Helper function สำหรับแปลง ISO string เป็น Date
+      const parseISODate = (isoString: string | null | undefined): Date | null => {
+        if (!isoString || typeof isoString !== 'string') {
+          console.error('Invalid ISO string:', isoString);
+          return null;
+        }
+
+        try {
+          // ตรวจสอบรูปแบบ ISO string
+          const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
+          if (!isoRegex.test(isoString.replace(/[+-]\d{2}:\d{2}$/, 'Z'))) {
+            console.error('Invalid ISO format:', isoString);
+            return null;
+          }
+
+          const date = new Date(isoString);
+          
+          if (isNaN(date.getTime())) {
+            console.error('Failed to parse ISO string to valid date:', isoString);
+            return null;
+          }
+
+          return date;
+        } catch (error) {
+          console.error('Error parsing ISO string:', isoString, error);
+          return null;
+        }
+      };
+
+      // Debug logging
+      console.log('=== Validation Debug ===');
+      console.log('initialDate (ISO):', initialDate);
+      console.log('initialEndDate (ISO):', initialEndDate);
+
+      // แปลง ISO strings เป็น Date objects
+      const iniStartDate = parseISODate(initialDate);
+      const iniEndDate = parseISODate(initialEndDate);
+
+      console.log('Parsed start date:', iniStartDate);
+      console.log('Parsed end date:', iniEndDate);
+
+      // ตรวจสอบว่าแปลงสำเร็จหรือไม่
+      if (!iniStartDate || !iniEndDate) {
+        resolve({ 
+          success: false, 
+          message: "Invalid date format. Please check your date selection." 
+        });
+        return;
+      }
+
+      // ตรวจสอบลำดับเวลา
+      if (iniStartDate.getTime() >= iniEndDate.getTime()) {
+        resolve({ 
+          success: false, 
+          message: "Start time must be before end time." 
+        });
+        return;
+      }
+
+      // ตรวจสอบห้อง
+      if (!SelectedRoom) {
         resolve({ 
           success: false, 
           message: "Please select a room before proceeding with your booking." 
         });
         return;
       }
-      const bookData = allBookings.filter((item) => item.roomId == SelectedRoom?.id)
-      console.log(bookData)
-      // ตรวจสอบการซ้อนทับของช่วงเวลา
-      if(bookData != null && iniStartDate != null && iniEndDate != null){
+
+      // กรองข้อมูลการจองของห้อง
+      const bookData = allBookings.filter((item) => item.roomId === SelectedRoom?.id);
+      console.log('Existing bookings for room:', bookData);
+
+      // ตรวจสอบการซ้อนทับ
+      if (bookData && bookData.length > 0) {
         const isOverlapping = bookData.some((booking) => {
-          return (
-            (iniStartDate >= new Date(booking.start) && iniStartDate < new Date(booking.end)) || // เริ่มในช่วงที่จองแล้ว
-            (iniEndDate > new Date(booking.start) && iniEndDate <= new Date(booking.end)) || // สิ้นสุดในช่วงที่จองแล้ว
-            (iniStartDate <= new Date(booking.start) && iniEndDate >= new Date(booking.end)) // ครอบคลุมช่วงที่จองแล้ว
+          console.log('Checking booking:', booking);
+          
+          // แปลง booking dates
+          const bookingStart = parseISODate(booking.start);
+          const bookingEnd = parseISODate(booking.end);
+
+          if (!bookingStart || !bookingEnd) {
+            console.warn('Invalid booking dates found:', booking);
+            return false; // ข้ามรายการที่มีปัญหา
+          }
+
+          console.log('Comparison:');
+          console.log('  New booking:', iniStartDate, 'to', iniEndDate);
+          console.log('  Existing booking:', bookingStart, 'to', bookingEnd);
+
+          // ตรวจสอบการทับซ้อน
+          const overlap = (
+            (iniStartDate >= bookingStart && iniStartDate < bookingEnd) || // เริ่มในช่วงที่จองแล้ว
+            (iniEndDate > bookingStart && iniEndDate <= bookingEnd) || // สิ้นสุดในช่วงที่จองแล้ว
+            (iniStartDate <= bookingStart && iniEndDate >= bookingEnd) // ครอบคลุมช่วงที่จองแล้ว
           );
+
+          if (overlap) {
+            console.log('OVERLAP DETECTED!');
+          }
+
+          return overlap;
         });
         
         if (isOverlapping) {
           resolve({ 
             success: false, 
-            message: "This room is already booked for the selected time period. Please choose a different time slot" 
+            message: "This room is already booked for the selected time period. Please choose a different time slot." 
           });
           return;
         }
-
-        onSubmit(booking);
-        // ถ้าไม่มีการซ้อนทับ
-        resolve({ 
-          success: true, 
-          message: "Booking Success" 
-        });
-      }
-      }catch(err:any){
-        reject(new Error(err))
       }
 
-    })
-  }
+      // ถ้าผ่านการตรวจสอบทั้งหมด
+      console.log('Validation passed - proceeding with booking');
+      onSubmit(booking);
+      resolve({ 
+        success: true, 
+        message: "Booking Success" 
+      });
+
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error('Validation error:', err);
+      reject(new Error(`Validation failed: ${errorMessage}`));
+    }
+  });
+};
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-fadeIn">
       <div className="px-6 py-4 bg-blue-500 text-white flex justify-between items-center">

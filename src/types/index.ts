@@ -13,8 +13,8 @@ export interface Booking {
   id: number;
   roomId: number;
   title: string;
-  start: Date;
-  end: Date;
+  start: string;
+  end: string;
   userId: string;
   description?: string;
   attendees?: string[];

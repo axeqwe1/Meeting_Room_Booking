@@ -30,8 +30,8 @@ export interface CreateBookingRequest {
     user_id:string,
     title:string,
     description:string,
-    start_date:Date,
-    end_date:Date,
+    start_date:string,
+    end_date:string,
     attendees:string[]
 }
 
@@ -41,7 +41,7 @@ export interface UpdateBookingRequest {
     user_id:string,
     title:string,
     description:string,
-    start_date:Date,
-    end_date:Date,
+    start_date:string,
+    end_date:string
     attendees:string[]
 }

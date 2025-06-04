@@ -58,7 +58,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   // Fetch room data, filter by factorie
-  const fetchRoomData = useCallback(async (roomsData: any[]) => {
+  const fetchRoomData = useCallback(async (roomsData: any[]) : Promise<Room[]> => {
     const roomFilter = roomsData.filter((item: any) => {
       // ถ้า user เป็น All ให้ filter ตาม factorie
       if(user?.factorie === "All") {
@@ -83,13 +83,12 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
         color: '',
       };
     });
-
     setAllRooms(arrRoom);
     return arrRoom;
   }, [user, factorie]);
 
   // Fetch booking data and filter by rooms
-  const fetchBookingData = useCallback(async (rooms: Room[], bookingsData: any[]) => {
+  const fetchBookingData = useCallback(async (rooms: Room[], bookingsData: any[]) : Promise<Booking[]> => {
     const filteredRoomIds = rooms.map(r => r.id);
     const filteredBookings = bookingsData.filter((item: any) =>
       filteredRoomIds.includes(item.roomId)
@@ -111,113 +110,9 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return arrBooking;
   }, []);
 
-  const connection = getConnection();
-  // useEffect(() => {
-  //   if (defaultRoom) {
-  //     console.log('Selecting default room:', defaultRoom);
-  //     setSelectedRoom(defaultRoom);
-  //     const filtered = events.filter((event) => event.roomId === defaultRoom.id);
-  //     setSelectData(filtered);
-  //   } else {
-  //     setSelectedRoom(undefined);
-  //     setSelectData(events);
-  //   }
-  // }, [defaultRoom, events]);
-
-
-
-  useEffect(() => {
-    if(defaultRoom != null) setSelectedRoom(defaultRoom)
-  },[defaultRoom])
-
-  const refreshData = useCallback(async () => {
-    setLoading(true);
-    const [roomsRes, bookingsRes] = await Promise.all([
-      GetAllRoom(),
-      GetAllBooking()
-    ]);
-    const roomsData = roomsRes.data;
-    const bookingsData = bookingsRes.data;
-    const roomFilter = await fetchRoomData(roomsData);
-    await fetchBookingData(roomFilter, bookingsData);
-    setLoading(false);
-  }, [fetchRoomData, fetchBookingData]);
-
-  const refreshBooking = async () => {
-    const bookres = await GetAllBooking()
-    await fetchBookingData(allRooms,bookres.data)
-  }
-
-  const refreshRoom = async () => {
-    const roomres = await GetAllRoom()
-    await fetchRoomData(roomres.data)
-  }
-    useEffect(() => {
-    const connection = getConnection();
-    let isMounted = true;
-    const connect = async () => {
-      if (connection.state === 'Disconnected') {
-        try {
-          await connection.start();
-          console.log('SignalR connected.');
-        } catch (err) {
-          console.error('SignalR connection error:', err);
-        }
-      }
-      connection.on('ReceiveMessage', async (message: string) => {
-        console.log(message);
-        if (isMounted) {
-          await refreshData();
-        }
-      });
-    };
-    connect();
-    // Cleanup
-    return () => {
-      isMounted = false;
-      connection.off('ReceiveMessage');
-    };
-  }, [refreshData]);
-  const generateShuffledColors = () => {
-    const colors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F97316', '#14B8A6'];
-    for (let i = colors.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [colors[i], colors[j]] = [colors[j], colors[i]];
-    }
-    return colors;
-  };
-
-  // Refresh เมื่อ user หรือ factorie เปลี่ยน (หรือ mount รอบแรก)
-  useEffect(() => {
-    if (!user) return;
-    refreshData();
-  }, [user, factorie, refreshData]);
-
-  // Sync selectedRoom กับ defaultRoom
-  useEffect(() => {
-    if(defaultRoom != null) setSelectedRoom(defaultRoom);
-  },[defaultRoom]);
-
-
-  useEffect(() => {
-    const shuffledColors = generateShuffledColors();
-    const storedColors = JSON.parse(localStorage.getItem('roomColors') || '{}');
-    const newColors: { [roomId: string]: string } = { ...storedColors };
-
-    allRooms.forEach((room, index) => {
-      if (!newColors[room.id]) {
-        newColors[room.id] = shuffledColors[index % shuffledColors.length];
-      }
-    });
-
-    setRoomColors(newColors);
-    localStorage.setItem('roomColors', JSON.stringify(newColors));
-  }, [allRooms]);
-
-  useEffect(() => {
-
-    const calendarEvents = allBookings.map(booking => {
-      const room = allRooms.find(r => r.id === booking.roomId);
+  const configEvent = async (bookData:Booking[],roomData:Room[],roomColors: { [roomId: string]: string }) => {
+      const calendarEvents = bookData.map(booking => {
+      const room = roomData.find(r => r.id === booking.roomId);
       return {
         id: booking.id,
         title: booking.title,
@@ -236,7 +131,119 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }else{
       setSelectData(calendarEvents);
     }
-  }, [allBookings, allRooms, roomColors,defaultRoom,user]);
+  }
+
+  const generateShuffledColors = () => {
+    const colors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F97316', '#14B8A6'];
+    for (let i = colors.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [colors[i], colors[j]] = [colors[j], colors[i]];
+    }
+    return colors;
+  };
+  const generateRoomColors = (rooms: Room[]): { [roomId: string]: string } => {
+    const shuffledColors = generateShuffledColors();
+    const storedColors = JSON.parse(localStorage.getItem('roomColors') || '{}');
+    const newColors: { [roomId: string]: string } = { ...storedColors };
+
+    rooms.forEach((room, index) => {
+      if (!newColors[room.id]) {
+        newColors[room.id] = shuffledColors[index % shuffledColors.length];
+      }
+    });
+
+    localStorage.setItem('roomColors', JSON.stringify(newColors));
+    setRoomColors(newColors); // optional, for UI sync
+    return newColors;
+  };
+
+  useEffect(() => {
+    if(defaultRoom != null) setSelectedRoom(defaultRoom)
+  },[defaultRoom])
+
+  const refreshData = useCallback(async () => {
+    setLoading(true);
+    const [roomsRes, bookingsRes] = await Promise.all([
+      GetAllRoom(),
+      GetAllBooking()
+    ]);
+    const roomData = await fetchRoomData(roomsRes.data);
+    const bookingData = await fetchBookingData(roomData, bookingsRes.data);
+    const genColor = generateRoomColors(roomData)
+    configEvent(bookingData,roomData,genColor)
+    setLoading(false);
+  }, [fetchRoomData, fetchBookingData]);
+
+
+  const refreshBooking = async () => {
+    const [bookres] = await Promise.all([
+      GetAllBooking()
+    ]);
+    const bookData = bookres.data
+    await fetchBookingData(allRooms,bookData)
+  }
+
+  const refreshRoom = async () => {
+    const roomres = await GetAllRoom()
+    await fetchRoomData(roomres.data)
+  }
+
+  useEffect(() => {
+    const connection = getConnection();
+    let isMounted = true;
+    const connect = async () => {
+      if (connection.state === 'Disconnected') {
+        try {
+          await connection.start();
+          console.log('SignalR connected.');
+        } catch (err) {
+          console.error('SignalR connection error:', err);
+        }
+      }
+      connection.on('ReceiveMessage', async (message: string) => {
+        console.log(message);
+        if (isMounted) {
+          // await Promise.all([
+          //   refreshRoom(),
+          //   refreshBooking()
+          // ]);
+          // setEvent()
+          const [roomsRes, bookingsRes] = await Promise.all([
+            GetAllRoom(),
+            GetAllBooking()
+          ]);
+          const roomData = await fetchRoomData(roomsRes.data);
+          const bookingData = await fetchBookingData(roomData, bookingsRes.data);
+          const genColor = generateRoomColors(roomData)
+          configEvent(bookingData,roomData,genColor)
+        }
+      });
+    };
+    connect();
+    // Cleanup
+    return () => {
+      isMounted = false;
+      connection.off('ReceiveMessage');
+    };
+  }, [refreshData]);
+
+
+  // Refresh เมื่อ user หรือ factorie เปลี่ยน (หรือ mount รอบแรก)
+  useEffect(() => {
+    if (!user) return;
+    refreshData();
+  }, [user, factorie, refreshData]);
+
+  // Sync selectedRoom กับ defaultRoom
+  useEffect(() => {
+    if(defaultRoom != null) setSelectedRoom(defaultRoom);
+  },[defaultRoom]);
+
+
+  // useEffect(() => {
+  //   generateRoomColors(allRooms)
+  // }, [allRooms]);
+
 
   return (
     <RoomContext.Provider

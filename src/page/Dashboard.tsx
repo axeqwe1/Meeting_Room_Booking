@@ -20,8 +20,8 @@ import { useAuth } from '../context/AuthContext';
 const Dashboard: React.FC = () => {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
-  const [initialDate, setInitialDate] = useState<Date | undefined>(undefined);
-  const [initialEndDate, setInitialEndDate] = useState<Date | undefined>(undefined);
+  const [initialDate, setInitialDate] = useState<string | undefined>(undefined);
+  const [initialEndDate, setInitialEndDate] = useState<string | undefined>(undefined);
   const [showRoomList, setShowRoomList] = useState(false);
   const [modalRoomlist,setModalRoomlist] = useState(false);
   const {defaultRoom} = useSettings()
@@ -91,8 +91,8 @@ const Dashboard: React.FC = () => {
         });
         return;
       }
-      setInitialDate(startDay);
-      setInitialEndDate(endDay);
+      setInitialDate(startDay.toISOString());
+      setInitialEndDate(endDay.toISOString());
       setShowBookingForm(true);
     }
     else{
@@ -107,8 +107,8 @@ const Dashboard: React.FC = () => {
         });
         return;
       }
-      setInitialDate(startDay);
-      setInitialEndDate(endDay);
+      setInitialDate(startDay.toISOString());
+      setInitialEndDate(endDay.toISOString());
       setShowBookingForm(true);
     }
   };
@@ -132,7 +132,26 @@ const Dashboard: React.FC = () => {
     setModalRoomlist(false)
   };
  
-
+function toUTCWithTimezone(date:any, timezone = 'Asia/Bangkok') {
+  if (!date) return new Date().toISOString();
+  
+  // สร้าง Date ใน timezone ที่ต้องการ
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  
+  const parts = formatter.formatToParts(date);
+  const formattedDate = `${parts[0].value}-${parts[2].value}-${parts[4].value}T${parts[6].value}:${parts[8].value}:${parts[10].value}`;
+  
+  return new Date(formattedDate).toISOString();
+}
   const handleCreateBooking = (booking: Partial<Booking>) => {
     console.log(booking)
     if(booking.id != null || booking.id != undefined){
@@ -142,8 +161,8 @@ const Dashboard: React.FC = () => {
           user_id:user?.fullname || "",
           title:booking.title || "",
           description:booking.description || "",
-          start_date: booking.start ? new Date(booking.start.toLocaleString()) : new Date(),
-          end_date:booking.end ? new Date(booking.end.toLocaleString()) : new Date(),
+          start_date: toUTCWithTimezone(booking.start),
+          end_date: toUTCWithTimezone(booking.end),
           attendees:booking.attendees || []
       }
       const updateBooking = async (data:UpdateBookingRequest) => {
@@ -190,8 +209,8 @@ const Dashboard: React.FC = () => {
       const newBooking: CreateBookingRequest = {
         roomId: booking?.roomId || 0,
         title: booking.title || 'Untitled Meeting',
-        start_date: booking.start ? new Date(booking.start.toLocaleString()) : new Date(),
-        end_date:booking.end ? new Date(booking.end.toLocaleString()) : new Date(),
+        start_date: toUTCWithTimezone(booking.start),
+        end_date: toUTCWithTimezone(booking.end),
         user_id: user?.fullname || "",
         description: booking.description || "",
         attendees: booking.attendees || []

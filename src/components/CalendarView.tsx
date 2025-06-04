@@ -76,8 +76,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       return {
         id: event.id?.toString() || '',
         title: event.title,
-        start: event.start,
-        end: exclusiveEnd,
+        start: new Date(new Date(event.start).toLocaleString("en-US", { timeZone: "Asia/Bangkok" })),
+        end: new Date(new Date(exclusiveEnd).toLocaleString("en-US", { timeZone: "Asia/Bangkok" })),
         allDay: isAllDay, // ✅ ใส่ allDay เฉพาะ event ข้ามวัน
         backgroundColor: event.color || '#d4d4d4',
         borderColor: event.color || '#d4d4d4',
@@ -301,6 +301,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             
             // Locale settings
             locale="en-US"
+            timeZone="Asia/Bangkok"  // เพิ่มบรรทัดนี้
             firstDay={1} // เริ่มต้นที่วันจันทร์
             nowIndicator={true}
             // เพิ่มการตั้งค่ารูปแบบเวลาแบบ 24 ชั่วโมงที่นี่
