@@ -54,7 +54,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
   const handleSelectFactory = (factory: string) => {
     selectedFactories(factory);
-    console.log('Selected factory:', factory);
 
     // โฟกัสกลับไปยังปุ่มแล้ว blur
     setTimeout(() => {
@@ -63,33 +62,34 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     }, 0);
   };
 
-  const fullCalendarEvents = useMemo(() => {
-    const filteredEvents = selectedRoomIdFilter
-      ? events.filter(event => event.roomId === selectedRoomIdFilter)
-      : events;
-    return filteredEvents.map(event => {
-      const isAllDay = new Date(event.end).getDate() !== new Date(event.start).getDate(); // ข้ามวันหรือไม่
-      const exclusiveEnd = new Date(event.end)
-      if(isAllDay){
-        exclusiveEnd.setDate(exclusiveEnd.getDate() + 1)
+const fullCalendarEvents = useMemo(() => {
+  const filteredEvents = selectedRoomIdFilter
+    ? events.filter(event => event.roomId === selectedRoomIdFilter)
+    : events;
+  return filteredEvents.map(event => {
+    const isAllDay = new Date(event.end).getUTCDate() !== new Date(event.start).getUTCDate();
+    const startUtc = new Date(event.start);
+    const endUtc = new Date(event.end);
+    if (isAllDay) {
+      endUtc.setUTCDate(endUtc.getUTCDate() + 1);
+    }
+    console.log(endUtc.toISOString())
+    return {
+      id: event.id?.toString() || '',
+      title: event.title,
+      start: startUtc.toISOString(),
+      end: endUtc.toISOString(),
+      allDay: isAllDay,
+      backgroundColor: event.color || '#d4d4d4',
+      borderColor: event.color || '#d4d4d4',
+      textColor: '#ffffff',
+      extendedProps: {
+        roomId: event.roomId,
+        originalEvent: event
       }
-      return {
-        id: event.id?.toString() || '',
-        title: event.title,
-        start: new Date(new Date(event.start).toLocaleString("en-US", { timeZone: "Asia/Bangkok" })),
-        end: new Date(new Date(exclusiveEnd).toLocaleString("en-US", { timeZone: "Asia/Bangkok" })),
-        allDay: isAllDay, // ✅ ใส่ allDay เฉพาะ event ข้ามวัน
-        backgroundColor: event.color || '#d4d4d4',
-        borderColor: event.color || '#d4d4d4',
-        textColor: '#ffffff',
-        extendedProps: {
-          roomId: event.roomId,
-          originalEvent: event
-        }
-      };
-    });
-    
-  }, [events, selectedRoomIdFilter]);
+    };
+  });
+}, [events, selectedRoomIdFilter]);
 
 
   const handleViewChange = (newView: string) => {
@@ -163,7 +163,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   };
 
   useEffect(() => {
-    console.log(calendarRef.current)
     if (calendarRef.current) {
       calendarRef.current.getApi().changeView('dayGridMonth');
       setView('dayGridMonth')
@@ -286,7 +285,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             eventDisplay="block"
             dayMaxEvents={1}
             moreLinkClick="popover"
-            
+            timeZone="UTC"
             // Responsive settings
             height="100%"
             // contentHeight="100%"
@@ -301,50 +300,65 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             
             // Locale settings
             locale="en-US"
-            timeZone="Asia/Bangkok"  // เพิ่มบรรทัดนี้
             firstDay={1} // เริ่มต้นที่วันจันทร์
             nowIndicator={true}
+            
             // เพิ่มการตั้งค่ารูปแบบเวลาแบบ 24 ชั่วโมงที่นี่
             slotLabelFormat={{
               hour: '2-digit',
               minute: '2-digit',
               hour12: false,
-              meridiem: false
+              meridiem: false,
+              timeZone: 'UTC' // ระบุ timezone ในรูปแบบเวลา
             }}
             eventTimeFormat={{
               hour: '2-digit',
               minute: '2-digit',
               hour12: false,
-              meridiem: false
+              meridiem: false,
+              timeZone: 'UTC' // ระบุ timezone ในรูปแบบเวลา
             }}
             // Hide weekends in week view (work week)
             weekends={view !== 'timeGridWeek'}
             
             // Custom event rendering
-            eventContent={(eventInfo: EventContentArg) => {
-              const start = fullCalendarEvents.find((item) => item.id == eventInfo.event.id)?.start;
-              const originalEnd = fullCalendarEvents.find((item) => item.id == eventInfo.event.id)?.end;
-              const isAllDay = eventInfo.event.allDay;
-              let displayEnd = originalEnd ? new Date(originalEnd) : undefined;
+          eventContent={(eventInfo: EventContentArg) => {
+            const matchingEvent = fullCalendarEvents.find((item) => item.id == eventInfo.event.id);
+            const start = matchingEvent?.start
+            const end = matchingEvent?.end
+            const displayEnd = end ? new Date(end) : undefined
+            const isAllDay = eventInfo.event.allDay;
 
+            const timeFormat: Intl.DateTimeFormatOptions = {
+              day: '2-digit',
+              month: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'UTC'
+            };
+
+            let startStr = eventInfo.event.startStr;
+            let endStr = eventInfo.event.endStr;
+
+            if (start) {
+              startStr = new Date(start).toLocaleString('en-GB', timeFormat).replace(',', '');
+            }
+
+            if (end) {
+              let endDate = new Date(end);
               if (isAllDay && displayEnd) {
-                displayEnd.setDate(displayEnd.getDate() - 1); // ✅ ลด 1 วันเฉพาะตอนแสดงผล
+                endDate.setDate(endDate.getDate() - 1); // ✅ ลด 1 วันเฉพาะ allDay
               }
-
-              const timeFormat: Intl.DateTimeFormatOptions = {
-                day: '2-digit',
-                month: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-              };
-
-              return (
-                <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
-                  {start?.toLocaleTimeString([], timeFormat)? start?.toLocaleTimeString([], timeFormat) : eventInfo.event.start?.toLocaleTimeString([], timeFormat)} - {displayEnd?.toLocaleTimeString([], timeFormat)? displayEnd?.toLocaleTimeString([], timeFormat) : eventInfo.event.end?.toLocaleTimeString([], timeFormat)} : {eventInfo.event.title}
-                </div>
-              );
-            }}
+              endStr = endDate.toLocaleString('en-GB', timeFormat).replace(',', '');
+            }
+            console.log(end)
+            return (
+              <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden bg-black/50">
+                {startStr} - {endStr} : {eventInfo.event.title}
+              </div>
+            );
+          }}
             
             // View specific settings
             views={{
@@ -441,34 +455,54 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                   selectMirror={true}
                   height="100%"
                   nowIndicator={true}
+                  timeZone="UTC"
                   // เพิ่มการตั้งค่ารูปแบบเวลาแบบ 24 ชั่วโมงที่นี่
                   slotLabelFormat={{
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: false,
-                    meridiem: false
+                    meridiem: false,
+                    timeZone: 'UTC' // ระบุ timezone ในรูปแบบเวลา
                   }}
                   eventTimeFormat={{
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: false,
-                    meridiem: false
+                    meridiem: false,
+                    timeZone: 'UTC' // ระบุ timezone ในรูปแบบเวลา
                   }}
-                  eventContent={(eventInfo:EventContentArg) => {
-                    const start = fullCalendarEvents.find((item) => item.id == eventInfo.event.id)?.start
-                    const end = fullCalendarEvents.find((item) => item.id == eventInfo.event.id)?.end
+                  eventContent={(eventInfo: EventContentArg) => {
+                    const foundEvent = fullCalendarEvents.find(item => item.id == eventInfo.event.id);
+
+                    const isAllDay = eventInfo.event.allDay;
 
                     const timeFormat: Intl.DateTimeFormatOptions = {
-                      day: '2-digit',      // แสดงเลขวัน เช่น 27
-                      month: '2-digit',    // แสดงเลขเดือน เช่น 05
+                      day: '2-digit',
+                      month: '2-digit',
                       hour: '2-digit',
                       minute: '2-digit',
-                      hour12: false,        // ใช้เวลาแบบ 12 ชั่วโมง (AM/PM)
+                      hour12: false,
+                      timeZone: 'UTC'
                     };
+
+                    let startStr = eventInfo.event.startStr;
+                    let endStr = eventInfo.event.endStr;
+
+                    if (foundEvent?.start) {
+                      startStr = new Date(foundEvent.start).toLocaleString('en-GB', timeFormat).replace(',', '');
+                    }
+
+                    if (foundEvent?.end) {
+                      const endDate = new Date(foundEvent.end);
+                      if (isAllDay) {
+                        endDate.setDate(endDate.getDate() - 1); // ✅ ลด 1 วันเฉพาะ allDay เพื่อไม่ให้เกิน
+                      }
+                      endStr = endDate.toLocaleString('en-GB', timeFormat).replace(',', '');
+                    }
 
                     return (
                       <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden bg-black/50">
-                        {start?.toLocaleTimeString([], timeFormat)? start?.toLocaleTimeString([], timeFormat) : eventInfo.event.start?.toLocaleTimeString([], timeFormat)} - {end?.toLocaleTimeString([], timeFormat)? end?.toLocaleTimeString([], timeFormat) : eventInfo.event.end?.toLocaleTimeString([], timeFormat)} : {eventInfo.event.title}
+                        {startStr} - {endStr} : {eventInfo.event.title}
                       </div>
                     );
                   }}

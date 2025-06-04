@@ -1,6 +1,6 @@
 import React from 'react';
 import { Booking, Room } from '../types';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { X, Calendar, Clock, Users, MapPin } from 'lucide-react';
 import { useScrollLock } from "../hook/useScrollLock"; // อ้างอิง path ตามโครงสร้างของคุณ
 
@@ -12,6 +12,8 @@ interface EventDetailsProps {
   onDelete: (bookingId: number) => void;
 }
 
+const TIMEZONE = 'Asia/Bangkok';
+
 const EventDetails: React.FC<EventDetailsProps> = ({
   booking,
   room,
@@ -19,7 +21,8 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   onEdit,
   onDelete
 }) => {
-  useScrollLock()
+  useScrollLock();
+
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-fadeIn">
       <div className="px-6 py-4 bg-blue-500 text-white flex justify-between items-center">
@@ -41,7 +44,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
             <div>
               <p className="text-sm font-medium text-gray-500">Date</p>
               <p className="text-base text-gray-900">
-                {format(booking.start, 'MMMM d, yyyy')}
+                {formatInTimeZone(booking.start, "UTC", 'MMMM d, yyyy')}
               </p>
             </div>
           </div>
@@ -51,7 +54,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
             <div>
               <p className="text-sm font-medium text-gray-500">Time</p>
               <p className="text-base text-gray-900">
-                {format(booking.start, 'h:mm a')} - {format(booking.end, 'h:mm a')}
+                {formatInTimeZone(booking.start, "UTC", 'h:mm a')} - {formatInTimeZone(booking.end, "UTC", 'h:mm a')}
               </p>
             </div>
           </div>

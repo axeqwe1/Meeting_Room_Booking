@@ -60,14 +60,13 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Fetch room data, filter by factorie
   const fetchRoomData = useCallback(async (roomsData: any[]) : Promise<Room[]> => {
     const roomFilter = roomsData.filter((item: any) => {
-      // ถ้า user เป็น All ให้ filter ตาม factorie
       if(user?.factorie === "All") {
-        if(factorie !== "All"){
-          return factorie === item.factory;
+        if(factorie != "All"){
+          return factorie === item.factory
         }
-        return true;
-      } else {
-        return item.factory === user?.factorie;
+        return true
+      }else{
+        return item.factory === user?.factorie
       } 
     });
     const arrRoom: Room[] = roomFilter.map((item: any) => {
@@ -84,15 +83,17 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     });
     setAllRooms(arrRoom);
-    return arrRoom;
-  }, [user, factorie]);
+    return arrRoom; // <-- เพิ่ม return เพื่อใช้ใน fetchBookingData
+  },[user, factorie]);
 
   // Fetch booking data and filter by rooms
   const fetchBookingData = useCallback(async (rooms: Room[], bookingsData: any[]) : Promise<Booking[]> => {
     const filteredRoomIds = rooms.map(r => r.id);
+
     const filteredBookings = bookingsData.filter((item: any) =>
       filteredRoomIds.includes(item.roomId)
     );
+
     const arrBooking: Booking[] = filteredBookings.map((item: any) => {
       const attendees = item.attendeess.map((a: any) => a.user_name);
       return {
@@ -106,9 +107,11 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
         attendees: attendees,
       };
     });
+
     setAllBookings(arrBooking);
-    return arrBooking;
-  }, []);
+    console.log(arrBooking)
+    return arrBooking
+  },[]);
 
   const configEvent = async (bookData:Booking[],roomData:Room[],roomColors: { [roomId: string]: string }) => {
       const calendarEvents = bookData.map(booking => {
@@ -116,8 +119,8 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return {
         id: booking.id,
         title: booking.title,
-        start: new Date(booking.start),
-        end: new Date(booking.end),
+        start: booking.start,
+        end: booking.end,
         roomId: booking.roomId,
         roomName: room?.name,
         color: roomColors[booking.roomId] || '#999999'
@@ -215,6 +218,13 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const roomData = await fetchRoomData(roomsRes.data);
           const bookingData = await fetchBookingData(roomData, bookingsRes.data);
           const genColor = generateRoomColors(roomData)
+          if(defaultRoom){
+            console.log(defaultRoom)
+            bookingData.filter((item) => {
+              return item.roomId == defaultRoom.id
+            })
+            setSelectedRoom(defaultRoom)
+          }
           configEvent(bookingData,roomData,genColor)
         }
       });

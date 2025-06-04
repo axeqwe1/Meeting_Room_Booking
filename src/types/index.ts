@@ -23,8 +23,8 @@ export interface Booking {
 export interface CalendarEvent {
   id: number;
   title: string;
-  start: Date;
-  end: Date;
+  start: string;
+  end: string;
   roomId: number;
   resourceId?: string;
   roomName?: string;

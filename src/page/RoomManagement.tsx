@@ -16,7 +16,7 @@ const RoomManagement: React.FC = () => {
   const [showRoomForm, setShowRoomForm] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
   const {showAlert} = useAlert()
-
+  const {refreshRoom} = useRoomContext()
   const handleAddRoom = async (room: Room) => {
     
     const data:CreateRoomRequest = {
@@ -36,6 +36,7 @@ const RoomManagement: React.FC = () => {
           iconColor: 'text-green-500',
           iconSize: 80
         });
+        refreshRoom()
     }
     if(res.data.error != null)
       {
@@ -70,6 +71,7 @@ const RoomManagement: React.FC = () => {
           iconColor: 'text-green-500',
           iconSize: 80
         });
+        refreshRoom()
     }else{
       showAlert({
         title: 'Failed',
@@ -118,6 +120,7 @@ const RoomManagement: React.FC = () => {
         iconColor: 'text-green-500',
         iconSize: 80
       });
+      refreshRoom()
     }
     else{
       showAlert({

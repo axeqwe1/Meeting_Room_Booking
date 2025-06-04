@@ -16,7 +16,7 @@ import { CreateBooking, DeleteBooking, UpdateBooking } from '../api/Booking';
 import { CreateBookingRequest, UpdateBookingRequest } from '../types/RequestDTO';
 import dayjs from 'dayjs';
 import { useAuth } from '../context/AuthContext';
-
+import { DateTime } from 'luxon';
 const Dashboard: React.FC = () => {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
@@ -70,15 +70,18 @@ const Dashboard: React.FC = () => {
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date;  }, view:string) => {
     
-    const startDay = new Date(slotInfo.start)
-    const endDay = new Date(slotInfo.end)
-    console.log(view)
+    const startDay = slotInfo.start;
+    const endDay = slotInfo.end;
+    console.log(startDay.toISOString())
 
+    // ตั้งค่าเวลาเป็น 00:00:00 โดยตรงใน startDay และ endDay
     const startDateOnly = new Date(startDay).setHours(0, 0, 0, 0);
     const endDateOnly = new Date(endDay).setHours(0, 0, 0, 0);
+
+    // ตรวจสอบและปรับ endDay ถ้าจำเป็น (อาจลบได้ถ้าไม่ต้องการ)
     if (endDateOnly > startDateOnly) {
         endDay.setDate(endDay.getDate() - 1);
-        console.log(endDay); // ผลลัพธ์: "2023-10-31" (31 ตุลาคม 2023)
+        console.log(endDay.toISOString()); // ผลลัพธ์ตัวอย่าง: "2023-10-31"
     }
     if(view != 'dayGridMonth'){
       if(selectedRoom == null){
@@ -91,6 +94,7 @@ const Dashboard: React.FC = () => {
         });
         return;
       }
+      console.log(startDay.toISOString())
       setInitialDate(startDay.toISOString());
       setInitialEndDate(endDay.toISOString());
       setShowBookingForm(true);
@@ -107,6 +111,7 @@ const Dashboard: React.FC = () => {
         });
         return;
       }
+      console.log(startDay.toISOString())
       setInitialDate(startDay.toISOString());
       setInitialEndDate(endDay.toISOString());
       setShowBookingForm(true);
@@ -154,6 +159,12 @@ function toUTCWithTimezone(date:any, timezone = 'Asia/Bangkok') {
 }
   const handleCreateBooking = (booking: Partial<Booking>) => {
     console.log(booking)
+    const start = booking.start 
+      // ? DateTime.fromISO(booking.start, { zone: 'Asia/Bangkok' }).toUTC().toISO() 
+      // : DateTime.now().setZone('Asia/Bangkok').toUTC().toISO();
+    const end = booking.end 
+      // ? DateTime.fromISO(booking.end, { zone: 'Asia/Bangkok' }).toUTC().toISO() 
+      // : DateTime.now().setZone('Asia/Bangkok').toUTC().toISO();
     if(booking.id != null || booking.id != undefined){
       const updateData:UpdateBookingRequest = {
           bookingId:booking.id,
@@ -161,8 +172,8 @@ function toUTCWithTimezone(date:any, timezone = 'Asia/Bangkok') {
           user_id:user?.fullname || "",
           title:booking.title || "",
           description:booking.description || "",
-          start_date: toUTCWithTimezone(booking.start),
-          end_date: toUTCWithTimezone(booking.end),
+          start_date: start || new Date().toISOString(),
+          end_date: end || new Date().toISOString(),
           attendees:booking.attendees || []
       }
       const updateBooking = async (data:UpdateBookingRequest) => {
@@ -206,11 +217,12 @@ function toUTCWithTimezone(date:any, timezone = 'Asia/Bangkok') {
         }
       },100)
     }else{
+      
       const newBooking: CreateBookingRequest = {
         roomId: booking?.roomId || 0,
         title: booking.title || 'Untitled Meeting',
-        start_date: toUTCWithTimezone(booking.start),
-        end_date: toUTCWithTimezone(booking.end),
+        start_date: start || new Date().toISOString(), 
+        end_date: end || new Date().toISOString(),
         user_id: user?.fullname || "",
         description: booking.description || "",
         attendees: booking.attendees || []
