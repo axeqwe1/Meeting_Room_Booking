@@ -338,6 +338,11 @@ const fullCalendarEvents = useMemo(() => {
             };
 
             let startStr = formatInTimeZone(eventInfo.event.startStr, "UTC", 'dd/MM HH:mm');
+            if (!eventInfo.event.endStr || isNaN(new Date(eventInfo.event.endStr).getTime())) {
+              console.error('Invalid date value:', eventInfo.event.endStr);
+              return 'Invalid date'; // หรือค่าที่คุณต้องการแสดงเมื่อวันที่ไม่ถูกต้อง
+            }
+
             let endStr = formatInTimeZone(eventInfo.event.endStr, "UTC", 'dd/MM HH:mm');
 
             if (start) {

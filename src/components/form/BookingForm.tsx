@@ -78,7 +78,25 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if(BookingData != null){
-      onSubmit(booking);
+      const isValid =  await validation()
+      if(isValid.success){
+        showAlert({
+          title: 'Success',
+          message: isValid.message,
+          icon: CircleCheck,
+          iconColor: 'text-green-500',
+          iconSize: 80
+        });
+      }else{
+        showAlert({
+          title: 'Failed',
+          message: isValid.message,
+          icon: CircleOff,
+          iconColor: 'text-red-500',
+          iconSize: 80
+        });
+      }
+      
     }else{
       const isValid =  await validation()
       setValidationAlert(isValid.success)
@@ -110,7 +128,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     console.log(value)
-
     setBooking(prev => ({
       ...prev,
       [name]: value,
@@ -139,6 +156,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 const validation = (): Promise<{ success: boolean; message: string }> => {
   return new Promise((resolve, reject) => {
     try {
+      console.log(booking)
       function isSameDay(d1: Date, d2: Date) {
         return d1.getFullYear() === d2.getFullYear() &&
               d1.getMonth() === d2.getMonth() &&
@@ -152,12 +170,42 @@ const validation = (): Promise<{ success: boolean; message: string }> => {
       const isAllDay = (start: Date, end: Date) =>
         start.getHours() === 0 && start.getMinutes() === 0 &&
         (end.getHours() === 23 && end.getMinutes() === 59 || end.getHours() >= 21);
+      console.log(initialDate)
+      console.log(initialEndDate)
+      const isoStart =   DateTime.fromFormat( booking.start!!, "yyyy-MM-dd'T'HH:mm", { zone: 'utc' }).toUTC().toISO();
+      const isoEnd =   DateTime.fromFormat( booking.end!!, "yyyy-MM-dd'T'HH:mm", { zone: 'utc' }).toUTC().toISO();
 
-      const iniStartDate = initialDate ? new Date(initialDate) : new Date();
-      const iniEndDate = initialEndDate ? new Date(initialEndDate) : new Date();
+      const iniStartDate =
+        isoStart ? new Date(isoStart)
+        : initialDate ? new Date(initialDate)
+        : new Date();
 
+      const iniEndDate =
+        isoEnd ? new Date(isoEnd)
+        : initialEndDate ? new Date(initialEndDate)
+        : new Date();
+      console.log('initialDate:', iniStartDate);
+      console.log('initialEndDate:', iniEndDate);
       const bookData = allBookings.filter(item => item.roomId == SelectedRoom?.id);
 
+      if (!iniStartDate || !iniEndDate || isNaN(iniStartDate.getTime()) || isNaN(iniEndDate.getTime())) {
+        return resolve({
+          success: false,
+          message: "Please select a valid start and end date.",
+        });
+      }
+
+      console.log('iniStartDate', iniStartDate, iniStartDate.getTime());
+      console.log('iniEndDate', iniEndDate, iniEndDate.getTime());
+
+      const wrongFormat: boolean = iniEndDate.getTime() <= iniStartDate.getTime();
+      console.log(wrongFormat)
+      if(wrongFormat){
+        return resolve({
+          success: false,
+          message: "End date cant Greater than Start date.",
+        });
+      }
       // 1. ถ้ามี booking รายชั่วโมงในวันนั้น ห้ามจอง all-day หรือข้ามวันที่ครอบวันนั้น
       if (isAllDay(iniStartDate, iniEndDate) || iniStartDate.toDateString() !== iniEndDate.toDateString()) {
         const hasPartialBooking = bookData.some(booking => {
@@ -234,6 +282,7 @@ const validation = (): Promise<{ success: boolean; message: string }> => {
           message: "This room is already booked for the selected time period. Please choose a different time slot.",
         });
       }
+
 
       onSubmit(booking);
       resolve({
@@ -325,8 +374,10 @@ const validation = (): Promise<{ success: boolean; message: string }> => {
                   id="start"
                   name="start"
                   required
-                  value={booking.start ? DateTime.fromISO(booking.start, { zone: 'utc' })
-                      .toFormat("yyyy-MM-dd'T'HH:mm") : ''}
+                  value={booking.start
+                    ? DateTime.fromISO(booking.start, { zone: 'utc' }).toFormat("yyyy-MM-dd'T'HH:mm")
+                    : ''
+                  }
                   onChange={handleDateChange}
                   className="block w-full pl-10 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
@@ -346,8 +397,10 @@ const validation = (): Promise<{ success: boolean; message: string }> => {
                   id="end"
                   name="end"
                   required
-                  value={booking.end ? DateTime.fromISO(booking.end, { zone: 'utc' })
-                      .toFormat("yyyy-MM-dd'T'HH:mm") : ''}
+                  value={booking.end
+                    ? DateTime.fromISO(booking.end, { zone: 'utc' }).toFormat("yyyy-MM-dd'T'HH:mm")
+                    : ''
+                  }
                   onChange={handleDateChange}
                   className="block w-full pl-10 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />

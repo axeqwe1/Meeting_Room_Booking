@@ -1,22 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Room, Booking, CalendarEvent } from '../types';
-import { rooms, bookings } from '../data/dummyData';
-import Layout from '../components/Layout';
 import CalendarView from '../components/CalendarView';
 import RoomList from '../components/RoomList';
 import BookingForm from '../components/form/BookingForm';
 import EventDetails from '../components/EventDetails';
-import MobileMenu from '../components/MobileMenu';
-import { pre } from 'motion/react-client';
 import { useAlert } from '../context/AlertContext';
 import { CircleAlert, CircleAlertIcon, CircleCheck, CircleCheckIcon, CircleX, X } from 'lucide-react';
 import { useRoomContext  } from '../context/RoomContext';
 import { useSettings } from '../context/SettingContext';
 import { CreateBooking, DeleteBooking, UpdateBooking } from '../api/Booking';
 import { CreateBookingRequest, UpdateBookingRequest } from '../types/RequestDTO';
-import dayjs from 'dayjs';
 import { useAuth } from '../context/AuthContext';
-import { DateTime } from 'luxon';
 const Dashboard: React.FC = () => {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
@@ -31,7 +25,6 @@ const Dashboard: React.FC = () => {
   const {
     allRooms,
     allBookings,
-    setAllBookings,
     events,
     selectData,
     setSelectData,
@@ -44,8 +37,6 @@ const Dashboard: React.FC = () => {
     selectedEditRoom,
     setSelectedEditRoom,
     roomColors,
-    refreshData,
-    refreshBooking
   } = useRoomContext();
 
   // useEffect(() => {
@@ -149,26 +140,6 @@ const Dashboard: React.FC = () => {
     setModalRoomlist(false)
   };
  
-function toUTCWithTimezone(date:any, timezone = 'Asia/Bangkok') {
-  if (!date) return new Date().toISOString();
-  
-  // สร้าง Date ใน timezone ที่ต้องการ
-  const formatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit', 
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  });
-  
-  const parts = formatter.formatToParts(date);
-  const formattedDate = `${parts[0].value}-${parts[2].value}-${parts[4].value}T${parts[6].value}:${parts[8].value}:${parts[10].value}`;
-  
-  return new Date(formattedDate).toISOString();
-}
   const handleCreateBooking = (booking: Partial<Booking>) => {
     console.log(booking)
     const start = booking.start 
