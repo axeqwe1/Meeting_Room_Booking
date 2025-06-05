@@ -54,7 +54,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
             <div>
               <p className="text-sm font-medium text-gray-500">Time</p>
               <p className="text-base text-gray-900">
-                {formatInTimeZone(booking.start, "UTC", 'h:mm a')} - {formatInTimeZone(booking.end, "UTC", 'h:mm a')}
+                {formatInTimeZone(booking.start, "UTC", 'dd/MM HH:mm')} - {formatInTimeZone(booking.end, "UTC", 'dd/MM HH:mm')}
               </p>
             </div>
           </div>

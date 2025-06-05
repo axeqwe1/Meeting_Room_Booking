@@ -14,6 +14,7 @@ const Settings: React.FC = () => {
   const {allRooms} = useRoomContext()
   const handleSetDefaultRoom = (room: Room | null) => {
     if (room) {
+        console.log(room)
         setDefaultRoom(room);
     } else {
         setDefaultRoom(null)

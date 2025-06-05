@@ -109,7 +109,6 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     setAllBookings(arrBooking);
-    console.log(arrBooking)
     return arrBooking
   },[]);
 
@@ -126,10 +125,11 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
         color: roomColors[booking.roomId] || '#999999'
       };
     });
-    console.log(calendarEvents)
+    
     setEvents(calendarEvents);
     if(defaultRoom){
       const filtered = calendarEvents.filter((event) => event.roomId === defaultRoom.id);
+      console.log(filtered)
       setSelectData(filtered);
     }else{
       setSelectData(calendarEvents);
@@ -165,7 +165,13 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
   },[defaultRoom])
 
   const refreshData = useCallback(async () => {
+    console.log('refresh')
     setLoading(true);
+    refreshEvent()
+    setLoading(false);
+  }, [fetchRoomData, fetchBookingData,defaultRoom]);
+
+  const refreshEvent = async () => {
     const [roomsRes, bookingsRes] = await Promise.all([
       GetAllRoom(),
       GetAllBooking()
@@ -173,11 +179,15 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const roomData = await fetchRoomData(roomsRes.data);
     const bookingData = await fetchBookingData(roomData, bookingsRes.data);
     const genColor = generateRoomColors(roomData)
+    if(defaultRoom){
+      console.log(defaultRoom)
+      bookingData.filter((item) => {
+        return item.roomId == defaultRoom.id
+      })
+      setSelectedRoom(defaultRoom)
+    }
     configEvent(bookingData,roomData,genColor)
-    setLoading(false);
-  }, [fetchRoomData, fetchBookingData]);
-
-
+  }
   const refreshBooking = async () => {
     const [bookres] = await Promise.all([
       GetAllBooking()
@@ -246,7 +256,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Sync selectedRoom กับ defaultRoom
   useEffect(() => {
-    if(defaultRoom != null) setSelectedRoom(defaultRoom);
+    refreshEvent()
   },[defaultRoom]);
 
 

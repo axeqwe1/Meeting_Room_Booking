@@ -10,7 +10,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  console.log(isAuthenticated)
   if (loading) {
     // หรือจะใส่ spinner ก็ได้
     return <div>Loading...</div>;

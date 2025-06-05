@@ -15,7 +15,7 @@ import '../style/custom-select.css'; // import css ที่เราเขี�
 import { useSettings } from '../context/SettingContext';
 import { useRoomContext } from '../context/RoomContext';
 import { useAuth } from '../context/AuthContext';
-
+import { formatInTimeZone } from 'date-fns-tz';
 
 interface CalendarViewProps {
   events: any[];
@@ -73,7 +73,6 @@ const fullCalendarEvents = useMemo(() => {
     if (isAllDay) {
       endUtc.setUTCDate(endUtc.getUTCDate() + 1);
     }
-    console.log(endUtc.toISOString())
     return {
       id: event.id?.toString() || '',
       title: event.title,
@@ -89,7 +88,7 @@ const fullCalendarEvents = useMemo(() => {
       }
     };
   });
-}, [events, selectedRoomIdFilter]);
+}, [events, selectedRoomIdFilter,defaultRoom]);
 
 
   const handleViewChange = (newView: string) => {
@@ -338,8 +337,8 @@ const fullCalendarEvents = useMemo(() => {
               timeZone: 'UTC'
             };
 
-            let startStr = eventInfo.event.startStr;
-            let endStr = eventInfo.event.endStr;
+            let startStr = formatInTimeZone(eventInfo.event.startStr, "UTC", 'dd/MM HH:mm');
+            let endStr = formatInTimeZone(eventInfo.event.endStr, "UTC", 'dd/MM HH:mm');
 
             if (start) {
               startStr = new Date(start).toLocaleString('en-GB', timeFormat).replace(',', '');
@@ -352,9 +351,8 @@ const fullCalendarEvents = useMemo(() => {
               }
               endStr = endDate.toLocaleString('en-GB', timeFormat).replace(',', '');
             }
-            console.log(end)
             return (
-              <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden bg-black/50">
+              <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden">
                 {startStr} - {endStr} : {eventInfo.event.title}
               </div>
             );
@@ -485,9 +483,9 @@ const fullCalendarEvents = useMemo(() => {
                       timeZone: 'UTC'
                     };
 
-                    let startStr = eventInfo.event.startStr;
-                    let endStr = eventInfo.event.endStr;
-
+                    let startStr = formatInTimeZone(eventInfo.event.startStr, "UTC", 'dd/MM HH:mm');
+                    let endStr = formatInTimeZone(eventInfo.event.endStr, "UTC", 'dd/MM HH:mm');
+                    let title = eventInfo.event.title ? eventInfo.event.title : "No Title"
                     if (foundEvent?.start) {
                       startStr = new Date(foundEvent.start).toLocaleString('en-GB', timeFormat).replace(',', '');
                     }
@@ -502,7 +500,7 @@ const fullCalendarEvents = useMemo(() => {
 
                     return (
                       <div className="px-1 py-0.5 text-[14px] truncate leading-tight overflow-hidden bg-black/50">
-                        {startStr} - {endStr} : {eventInfo.event.title}
+                        {startStr} - {endStr} : {title}
                       </div>
                     );
                   }}

@@ -45,12 +45,12 @@ const Dashboard: React.FC = () => {
     setSelectedEditRoom,
     roomColors,
     refreshData,
-    
+    refreshBooking
   } = useRoomContext();
 
-  // useEffect(() => {
-  //   refreshBooking()
-  // },[])
+  useEffect(() => {
+    refreshBooking()
+  },[selectedRoom])
 
   const handleSelectEvent = (event: CalendarEvent,view:string) => {
     // if(view != 'month'){
