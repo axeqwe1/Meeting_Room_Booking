@@ -129,7 +129,6 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setEvents(calendarEvents);
     if(defaultRoom){
       const filtered = calendarEvents.filter((event) => event.roomId === defaultRoom.id);
-      console.log(filtered)
       setSelectData(filtered);
     }else{
       setSelectData(calendarEvents);
@@ -144,6 +143,7 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     return colors;
   };
+  
   const generateRoomColors = (rooms: Room[]): { [roomId: string]: string } => {
     const shuffledColors = generateShuffledColors();
     const storedColors = JSON.parse(localStorage.getItem('roomColors') || '{}');
@@ -185,6 +185,8 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return item.roomId == defaultRoom.id
       })
       setSelectedRoom(defaultRoom)
+    }else{
+      setSelectedRoom(undefined)
     }
     configEvent(bookingData,roomData,genColor)
   }
@@ -234,6 +236,8 @@ export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children
               return item.roomId == defaultRoom.id
             })
             setSelectedRoom(defaultRoom)
+          }else{
+            setSelectedRoom(undefined)
           }
           configEvent(bookingData,roomData,genColor)
         }

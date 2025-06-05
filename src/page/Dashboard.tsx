@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
   const [initialEndDate, setInitialEndDate] = useState<string | undefined>(undefined);
   const [showRoomList, setShowRoomList] = useState(false);
   const [modalRoomlist,setModalRoomlist] = useState(false);
-  const {defaultRoom} = useSettings()
+  const {defaultRoom,setDefaultRoom} = useSettings()
   const {user} = useAuth()
   // const [roomColors, setRoomColors] = useState<{ [roomId: string]: string }>({});
   const {showAlert} = useAlert()
@@ -48,10 +48,22 @@ const Dashboard: React.FC = () => {
     refreshBooking
   } = useRoomContext();
 
+  // useEffect(() => {
+  //   refreshBooking()
+  // },[selectedRoom])
   useEffect(() => {
-    refreshBooking()
-  },[selectedRoom])
-
+      const storedRoom = localStorage.getItem('defaultRoom');
+      if (storedRoom) {
+          console.log(storedRoom)
+          const objStoreRoom = JSON.parse(storedRoom)
+          if(user?.factorie == objStoreRoom.factory || user?.factorie == "All"){
+              setDefaultRoom(objStoreRoom);
+          }else{
+              localStorage.removeItem('defaultRoom');
+              setDefaultRoom(null)
+          }
+      }
+  }, []);
   const handleSelectEvent = (event: CalendarEvent,view:string) => {
     // if(view != 'month'){
       setSelectedEvent(event);

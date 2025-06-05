@@ -78,7 +78,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if(BookingData != null){
-      console.log(booking)
       onSubmit(booking);
     }else{
       const isValid =  await validation()
@@ -137,51 +136,115 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }));
   };
 
-  const validation = ():Promise<{success:boolean; message:string}> => {
-    return new Promise((resolve,reject) => {
-      try {
-      const iniStartDate = initialDate? new Date(initialDate) : new Date();
-      const iniEndDate = initialDate? new Date(initialDate) : new Date();
-      if(SelectedRoom == null){
-        resolve({ 
-          success: false, 
-          message: "Please select a room before proceeding with your booking." 
-        });
-        return;
+const validation = (): Promise<{ success: boolean; message: string }> => {
+  return new Promise((resolve, reject) => {
+    try {
+      function isSameDay(d1: Date, d2: Date) {
+        return d1.getFullYear() === d2.getFullYear() &&
+              d1.getMonth() === d2.getMonth() &&
+              d1.getDate() === d2.getDate();
       }
-      const bookData = allBookings.filter((item) => item.roomId == SelectedRoom?.id)
-      console.log(bookData)
-      // ตรวจสอบการซ้อนทับของช่วงเวลา
-      if(bookData != null && iniStartDate != null && iniEndDate != null){
-        const isOverlapping = bookData.some((booking) => {
-          return (
-            (iniStartDate >= new Date(booking.start) && iniStartDate < new Date(booking.end)) || // เริ่มในช่วงที่จองแล้ว
-            (iniEndDate > new Date(booking.start) && iniEndDate <= new Date(booking.end)) || // สิ้นสุดในช่วงที่จองแล้ว
-            (iniStartDate <= new Date(booking.start) && iniEndDate >= new Date(booking.end)) // ครอบคลุมช่วงที่จองแล้ว
-          );
+
+      function isDateInRange(date: Date, start: Date, end: Date) {
+        return date.getTime() >= start.getTime() && date.getTime() < end.getTime();
+      }
+
+      const isAllDay = (start: Date, end: Date) =>
+        start.getHours() === 0 && start.getMinutes() === 0 &&
+        (end.getHours() === 23 && end.getMinutes() === 59 || end.getHours() >= 21);
+
+      const iniStartDate = initialDate ? new Date(initialDate) : new Date();
+      const iniEndDate = initialEndDate ? new Date(initialEndDate) : new Date();
+
+      const bookData = allBookings.filter(item => item.roomId == SelectedRoom?.id);
+
+      // 1. ถ้ามี booking รายชั่วโมงในวันนั้น ห้ามจอง all-day หรือข้ามวันที่ครอบวันนั้น
+      if (isAllDay(iniStartDate, iniEndDate) || iniStartDate.toDateString() !== iniEndDate.toDateString()) {
+        const hasPartialBooking = bookData.some(booking => {
+          const bookingStart = new Date(booking.start);
+          const bookingEnd = new Date(booking.end);
+          // มีจองใดๆ ในวันเดียวกับ all-day หรือช่วงข้ามวันนี้
+          for (
+            let d = new Date(iniStartDate);
+            d <= iniEndDate;
+            d.setDate(d.getDate() + 1)
+          ) {
+            // ถ้า booking นั้นครอบวัน d
+            if (
+              isDateInRange(d, bookingStart, bookingEnd) ||
+              isSameDay(d, bookingStart) ||
+              isSameDay(d, bookingEnd)
+            ) {
+              // แต่ booking นั้นไม่ใช่ all-day
+              if (!isAllDay(bookingStart, bookingEnd)) return true;
+            }
+          }
+          return false;
         });
-        
-        if (isOverlapping) {
-          resolve({ 
-            success: false, 
-            message: "This room is already booked for the selected time period. Please choose a different time slot" 
+        if (hasPartialBooking) {
+          // มีรายชั่วโมงอยู่แล้ว ห้ามจอง all-day หรือข้ามวัน
+          return resolve({
+            success: false,
+            message: "Partial bookings already exist on this day. Cannot book all-day or multi-day.",
           });
-          return;
         }
+      }
 
-        onSubmit(booking);
-        // ถ้าไม่มีการซ้อนทับ
-        resolve({ 
-          success: true, 
-          message: "Booking Success" 
+      // 2. ถ้ามี booking all-day หรือข้ามวันในวันนั้น ห้ามจองรายชั่วโมงหรือช่วงใด ๆ ซ้ำวันนั้น
+      const hasAllDayOrCrossDayBooking = bookData.some(booking => {
+        const bookingStart = new Date(booking.start);
+        const bookingEnd = new Date(booking.end);
+        if (isAllDay(bookingStart, bookingEnd) || bookingStart.toDateString() !== bookingEnd.toDateString()) {
+          // ถ้าช่วงใหม่มีวันใดอยู่ในช่วง booking นี้
+          for (
+            let d = new Date(iniStartDate);
+            d <= iniEndDate;
+            d.setDate(d.getDate() + 1)
+          ) {
+            if (
+              isDateInRange(d, bookingStart, bookingEnd) ||
+              isSameDay(d, bookingStart) ||
+              isSameDay(d, bookingEnd)
+            ) {
+              return true;
+            }
+          }
+        }
+        return false;
+      });
+      if (hasAllDayOrCrossDayBooking) {
+        return resolve({
+          success: false,
+          message: "All-day or cross-day bookings already exist on this day. Cannot book partial time.",
         });
       }
-      }catch(err:any){
-        reject(new Error(err))
+
+      // 3. เช็ค overlap ปกติ (timestamp) เผื่อกรณีจองช่วงเวลาเดียวกัน
+      const isOverlapping = bookData.some((booking) => {
+        const bookingStart = new Date(booking.start).getTime();
+        const bookingEnd = new Date(booking.end).getTime();
+        const newStart = iniStartDate.getTime();
+        const newEnd = iniEndDate.getTime();
+        return !(newEnd <= bookingStart || newStart >= bookingEnd);
+      });
+
+      if (isOverlapping) {
+        return resolve({
+          success: false,
+          message: "This room is already booked for the selected time period. Please choose a different time slot.",
+        });
       }
 
-    })
-  }
+      onSubmit(booking);
+      resolve({
+        success: true,
+        message: "Booking Success",
+      });
+    } catch (err: any) {
+      reject(new Error(err));
+    }
+  });
+};
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-fadeIn">
       <div className="px-6 py-4 bg-blue-500 text-white flex justify-between items-center">

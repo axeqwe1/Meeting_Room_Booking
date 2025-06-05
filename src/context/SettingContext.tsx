@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, Dispatch, SetStateAction, ReactNode } from 'react';
 import { Room, Booking, CalendarEvent } from '../types';
 import { rooms, bookings } from '../data/dummyData';
+import { useAuth } from './AuthContext';
 
 interface SettingContextType {
   defaultRoom: Room | null;
@@ -18,22 +19,18 @@ interface SettingProviderProps {
 
 export const SettingProvider:React.FC<SettingProviderProps> = ({children}) => {
     const [defaultRoom, setDefaultRoom] = useState<Room | null>(null)
+    const {user} = useAuth()
     // const [defaultMode, setDefaultMode] = useState<boolean>(false)
 
     // โหลดค่าจาก localStorage ตอน mount
-    useEffect(() => {
-        const storedRoom = localStorage.getItem('defaultRoom');
-        if (storedRoom) {
-        setDefaultRoom(JSON.parse(storedRoom));
-        }
-    }, []);
+
 
     // ทุกครั้งที่ defaultRoom เปลี่ยน ให้บันทึกลง localStorage
     useEffect(() => {
         if (defaultRoom) {
-        localStorage.setItem('defaultRoom', JSON.stringify(defaultRoom));
+            localStorage.setItem('defaultRoom', JSON.stringify(defaultRoom));
         } else {
-        localStorage.removeItem('defaultRoom');
+            localStorage.removeItem('defaultRoom');
         }
     }, [defaultRoom]);
 

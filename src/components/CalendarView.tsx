@@ -284,7 +284,7 @@ const fullCalendarEvents = useMemo(() => {
             eventDisplay="block"
             dayMaxEvents={1}
             moreLinkClick="popover"
-            timeZone="UTC"
+            timeZone="Asia/Bangkok"
             // Responsive settings
             height="100%"
             // contentHeight="100%"
@@ -453,7 +453,7 @@ const fullCalendarEvents = useMemo(() => {
                   selectMirror={true}
                   height="100%"
                   nowIndicator={true}
-                  timeZone="UTC"
+                  timeZone="Asia/Bangkok"
                   // เพิ่มการตั้งค่ารูปแบบเวลาแบบ 24 ชั่วโมงที่นี่
                   slotLabelFormat={{
                     hour: '2-digit',
