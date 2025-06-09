@@ -200,7 +200,6 @@ const Dashboard: React.FC = () => {
         }
       },100)
     }else{
-      
       const newBooking: CreateBookingRequest = {
         roomId: booking?.roomId || 0,
         title: booking.title || 'Untitled Meeting',

@@ -76,47 +76,20 @@ const BookingForm: React.FC<BookingFormProps> = ({
   },[])
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("Current allBookings:", allBookings);
     e.preventDefault();
-    if(BookingData != null){
-      const isValid =  await validation()
-      if(isValid.success){
-        showAlert({
-          title: 'Success',
-          message: isValid.message,
-          icon: CircleCheck,
-          iconColor: 'text-green-500',
-          iconSize: 80
-        });
-      }else{
-        showAlert({
-          title: 'Failed',
-          message: isValid.message,
-          icon: CircleOff,
-          iconColor: 'text-red-500',
-          iconSize: 80
-        });
-      }
-      
+    const isValid =  await validation(BookingData != null)
+    setValidationAlert(isValid.success)
+    if(isValid.success){
+      onSubmit(booking);
     }else{
-      const isValid =  await validation()
-      setValidationAlert(isValid.success)
-      if(isValid.success){
-        showAlert({
-          title: 'Success',
-          message: isValid.message,
-          icon: CircleCheck,
-          iconColor: 'text-green-500',
-          iconSize: 80
-        });
-      }else{
-        showAlert({
-          title: 'Failed',
-          message: isValid.message,
-          icon: CircleOff,
-          iconColor: 'text-red-500',
-          iconSize: 80
-        });
-      }
+      showAlert({
+        title: 'Failed',
+        message: isValid.message,
+        icon: CircleOff,
+        iconColor: 'text-red-500',
+        iconSize: 80
+      });
     }
   };
 
@@ -153,7 +126,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }));
   };
 
-const validation = (): Promise<{ success: boolean; message: string }> => {
+const validation = (isEdit:boolean): Promise<{ success: boolean; message: string }> => {
   return new Promise((resolve, reject) => {
     try {
       console.log(booking)
@@ -186,7 +159,18 @@ const validation = (): Promise<{ success: boolean; message: string }> => {
         : new Date();
       console.log('initialDate:', iniStartDate);
       console.log('initialEndDate:', iniEndDate);
-      const bookData = allBookings.filter(item => item.roomId == SelectedRoom?.id);
+      let bookData = []
+      if(SelectedRoom){
+         bookData = allBookings.filter(item =>
+        item.roomId == SelectedRoom?.id
+      );
+      }else{
+        bookData = allBookings.filter(item =>
+        item.roomId == BookingData?.roomId &&
+        (!isEdit || item.id !== booking.id)
+        )
+      }
+
 
       if (!iniStartDate || !iniEndDate || isNaN(iniStartDate.getTime()) || isNaN(iniEndDate.getTime())) {
         return resolve({
@@ -267,13 +251,21 @@ const validation = (): Promise<{ success: boolean; message: string }> => {
         });
       }
 
+      console.log("Reached overlap check");
       // 3. เช็ค overlap ปกติ (timestamp) เผื่อกรณีจองช่วงเวลาเดียวกัน
+      console.log(bookData)
       const isOverlapping = bookData.some((booking) => {
+        if (isEdit && booking.id === BookingData?.id) {
+          // อย่าตรวจทับกับตัวเอง
+          return false;
+        }
+
         const bookingStart = new Date(booking.start).getTime();
         const bookingEnd = new Date(booking.end).getTime();
         const newStart = iniStartDate.getTime();
         const newEnd = iniEndDate.getTime();
-        return !(newEnd <= bookingStart || newStart >= bookingEnd);
+        const isOverlap = !(newEnd <= bookingStart || newStart >= bookingEnd);
+        return isOverlap;
       });
 
       if (isOverlapping) {
@@ -282,9 +274,6 @@ const validation = (): Promise<{ success: boolean; message: string }> => {
           message: "This room is already booked for the selected time period. Please choose a different time slot.",
         });
       }
-
-
-      onSubmit(booking);
       resolve({
         success: true,
         message: "Booking Success",
