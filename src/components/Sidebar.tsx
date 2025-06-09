@@ -1,15 +1,23 @@
-import React, { useState } from 'react';
-import { Calendar, LayoutGrid, Users, LogOut, ChevronLeft, ChevronRight, PlusCircle, Settings } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useLocation, useNavigate, NavLink } from 'react-router-dom';
-import { SignOut } from '../api/Auth';
-
+import React, { useState } from "react";
+import {
+  Calendar,
+  LayoutGrid,
+  Users,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  PlusCircle,
+  Settings,
+  DoorOpen,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate, NavLink } from "react-router-dom";
+import { SignOut } from "../api/Auth";
 
 interface SidebarProps {
   collapsed: boolean;
   setCollapsed: (value: boolean) => void;
 }
-
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
@@ -22,34 +30,34 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const navItems = [
     {
       icon: Calendar,
-      label: 'Calendar',
-      path: '/dashboard',
-      action: () => navigate('/dashboard')
+      label: "Calendar",
+      path: "/dashboard",
+      action: () => navigate("/dashboard"),
     },
     {
-      icon: Calendar,
-      label: 'RoomAvaliable',
-      path: '/roomavaliable',
-      action: () => navigate('/roomavaliable')
+      icon: DoorOpen,
+      label: "RoomAvaliable",
+      path: "/roomavaliable",
+      action: () => navigate("/roomavaliable"),
     },
     {
       icon: LayoutGrid,
-      label: 'Rooms',
-      path: '/rooms',
-      action: () => navigate('/rooms')
+      label: "Rooms",
+      path: "/rooms",
+      action: () => navigate("/rooms"),
     },
     {
       icon: Settings,
-      label: 'Settings',
-      path: '/settings',
-      action: () => navigate('/settings')
-    }
+      label: "Settings",
+      path: "/settings",
+      action: () => navigate("/settings"),
+    },
   ];
 
   return (
     <aside
       className={`md:relative md:block hidden z-20 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
-        collapsed ? 'w-20' : 'w-64'
+        collapsed ? "w-20" : "w-64"
       }`}
     >
       {/* เปลี่ยนจาก flex-col เป็น grid และกำหนดพื้นที่ให้ชัดเจน */}
@@ -60,7 +68,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
             className="hover:cursor-pointer p-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 transition-colors"
             onClick={() => setCollapsed(!collapsed)}
           >
-            {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+            {collapsed ? (
+              <ChevronRight className="h-5 w-5" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" />
+            )}
           </button>
         </div>
 
@@ -90,15 +102,19 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
                 //   item.action();
                 // }}
                 className={`flex items-center px-4 py-2 rounded-md group ${
-                  isActive(item.path) 
-                    ? 'text-blue-600 bg-blue-50' 
-                    : 'text-gray-600 hover:bg-gray-100'
-                } ${collapsed ? 'justify-center' : ''}`}
+                  isActive(item.path)
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-600 hover:bg-gray-100"
+                } ${collapsed ? "justify-center" : ""}`}
               >
-                <Icon className={`h-5 w-5 ${isActive(item.path) ? 'text-blue-500' : 'text-gray-500'} ${
-                  collapsed ? 'mr-0' : 'mr-3'
-                }`} />
-                {!collapsed && <span className="font-medium">{item.label}</span>}
+                <Icon
+                  className={`h-5 w-5 ${
+                    isActive(item.path) ? "text-blue-500" : "text-gray-500"
+                  } ${collapsed ? "mr-0" : "mr-3"}`}
+                />
+                {!collapsed && (
+                  <span className="font-medium">{item.label}</span>
+                )}
               </NavLink>
             );
           })}
@@ -110,9 +126,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              logout()
+              logout();
             }}
-            className={`flex items-center ${collapsed ? 'justify-center' : ''} px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md`}
+            className={`flex items-center ${
+              collapsed ? "justify-center" : ""
+            } px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-md`}
           >
             <LogOut className="h-5 w-5 text-red-600" />
             {!collapsed && <span className="ml-3">Logout</span>}
