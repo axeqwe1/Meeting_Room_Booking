@@ -343,7 +343,7 @@ const fullCalendarEvents = useMemo(() => {
               return 'Invalid date'; // หรือค่าที่คุณต้องการแสดงเมื่อวันที่ไม่ถูกต้อง
             }
 
-            let endStr = formatInTimeZone(eventInfo.event.endStr, "UTC", 'dd/MM HH:mm');
+            let endStr = formatInTimeZone(eventInfo.event.endStr, "UTC", 'HH:mm');
 
             if (start) {
               startStr = new Date(start).toLocaleString('en-GB', timeFormat).replace(',', '');

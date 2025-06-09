@@ -60,7 +60,16 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             <Calendar className={`h-5 w-5 mr-3 ${isActive('/dashboard') ? 'text-blue-500' : 'text-gray-500'}`} />
             <span className={isActive('/dashboard') ? 'font-medium' : ''}>Calendar</span>
           </button>
-          
+          <button
+            onClick={() => handleNavigation('/roomavaliable')}
+            className={`w-full flex items-center px-4 py-3 rounded-md ${
+              isActive('/roomavaliable') ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <Calendar className={`h-5 w-5 mr-3 ${isActive('/dashboard') ? 'text-blue-500' : 'text-gray-500'}`} />
+            <span className={isActive('/dashboard') ? 'font-medium' : ''}>RoomAvaliable</span>
+          </button>
+
           <button
             onClick={() => handleNavigation('/rooms')}
             className={`w-full flex items-center px-4 py-3 rounded-md ${

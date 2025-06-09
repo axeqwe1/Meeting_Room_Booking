@@ -27,6 +27,12 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
       action: () => navigate('/dashboard')
     },
     {
+      icon: Calendar,
+      label: 'RoomAvaliable',
+      path: '/roomavaliable',
+      action: () => navigate('/roomavaliable')
+    },
+    {
       icon: LayoutGrid,
       label: 'Rooms',
       path: '/rooms',
