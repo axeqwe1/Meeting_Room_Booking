@@ -252,8 +252,8 @@ const RoomAvaliable: React.FC = () => {
                   <div className="flex flex-col w-full">
                     <div className="mt-3 w-full">
                       <div className="flex items-center justify-between text-xs text-gray-500 mb-2"></div>
-                      <div className=" w-full overflow-x-auto">
-                        <div className="flex h-6 min-w-[768px] rounded overflow-hidden border border-gray-200 text-[10px] text-white">
+                      <div className=" w-full overflow-auto ">
+                        <div className="flex h-6 min-w-[1100px] rounded overflow-hidden border border-gray-200 text-[10px] text-white">
                           {segments.map((segment, index) => {
                             const key = `${
                               item.id
@@ -310,35 +310,41 @@ const RoomAvaliable: React.FC = () => {
 
                           return (
                             <div
-                              key={`detail-${key}`}
-                              className="text-xs mt-1 px-2 py-1 bg-gray-100 rounded shadow"
+                              className="min-w-[1100px]"
+                              key={`wrapper-${key}`}
                             >
-                              {segment.isBooked && segment.booking ? (
-                                <>
+                              <div
+                                key={`detail-${key}`}
+                                className="sticky bottom-0 left-0 bg-white px-2 py-1 shadow z-10 w-fit border rounded"
+                                // หากอยากติดบนแทน ให้เปลี่ยน bottom-0 เป็น top-0
+                              >
+                                {segment.isBooked && segment.booking ? (
+                                  <>
+                                    <div>
+                                      <strong>{segment.booking.title}</strong>
+                                    </div>
+                                    <div>
+                                      {formatTime(segment.booking.start)} -{" "}
+                                      {formatTime(segment.booking.end)}
+                                    </div>
+                                  </>
+                                ) : (
                                   <div>
-                                    <strong>{segment.booking.title}</strong>
+                                    Available:{" "}
+                                    {formatInTimeZone(
+                                      segment.start,
+                                      "UTC",
+                                      "HH:mm"
+                                    )}{" "}
+                                    -{" "}
+                                    {formatInTimeZone(
+                                      segment.end,
+                                      "UTC",
+                                      "HH:mm"
+                                    )}
                                   </div>
-                                  <div>
-                                    {formatTime(segment.booking.start)} -{" "}
-                                    {formatTime(segment.booking.end)}
-                                  </div>
-                                </>
-                              ) : (
-                                <div>
-                                  Available:{" "}
-                                  {formatInTimeZone(
-                                    segment.start,
-                                    "UTC",
-                                    "HH:mm"
-                                  )}{" "}
-                                  -{" "}
-                                  {formatInTimeZone(
-                                    segment.end,
-                                    "UTC",
-                                    "HH:mm"
-                                  )}
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
                           );
                         })}
