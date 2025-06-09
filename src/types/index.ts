@@ -1,12 +1,12 @@
 export interface Room {
   id: number;
   name: string;
-  capacity: number;
+  capacity: number | string;
   location: string;
   amenities: string[];
   imageUrl: string;
-  color:string;
-  factory:string;
+  color: string;
+  factory: string;
 }
 
 export interface Booking {
@@ -30,4 +30,4 @@ export interface CalendarEvent {
   roomName?: string;
 }
 
-export type View = 'day' | 'week' | 'month' | 'agenda';
+export type View = "day" | "week" | "month" | "agenda";
