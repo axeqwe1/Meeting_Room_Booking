@@ -112,7 +112,7 @@ const RoomAvaliable: React.FC = () => {
     }));
 
     const segments = [];
-    const totalMinutes = 12 * 60;
+    const totalMinutes = 11 * 60;
 
     // แปลง selectedDate เป็น UTC 00:00:00
     const utcDate = new Date(
@@ -251,29 +251,31 @@ const RoomAvaliable: React.FC = () => {
                 <div className="flex flex-row w-full">
                   <div className="flex flex-col w-full">
                     <div className="mt-3 w-full">
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                        <span>8:00</span>
-                        <span>12:00</span>
-                        <span>16:00</span>
-                        <span>20:00</span>
-                      </div>
-                      <div className="flex flex-col space-y-1">
-                        <div className="flex h-6 rounded overflow-hidden border border-gray-200">
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-2"></div>
+                      <div className=" w-full overflow-x-auto">
+                        <div className="flex h-6 min-w-[768px] rounded overflow-hidden border border-gray-200 text-[10px] text-white">
                           {segments.map((segment, index) => {
                             const key = `${
                               item.id
                             }-${segment.start.toISOString()}`;
+                            const isBooked = segment.isBooked;
+                            const timeLabel = formatInTimeZone(
+                              segment.start,
+                              "UTC",
+                              "HH:mm"
+                            );
+
                             return (
                               <div
                                 key={key}
                                 onClick={() => toggleSegment(key)}
-                                className={`flex-1 cursor-pointer ${
-                                  segment.isBooked
+                                className={`flex-1 min-w-[48px] relative cursor-pointer flex items-center justify-center ${
+                                  isBooked
                                     ? "bg-red-400 hover:bg-red-600"
                                     : "bg-green-400 hover:bg-green-600"
                                 }`}
                                 title={
-                                  segment.isBooked && segment.booking
+                                  isBooked && segment.booking
                                     ? `${segment.booking.title} (${formatTime(
                                         segment.booking.start
                                       )} - ${formatTime(segment.booking.end)})`
@@ -287,7 +289,14 @@ const RoomAvaliable: React.FC = () => {
                                         "HH:mm"
                                       )})`
                                 }
-                              />
+                              >
+                                {/* Label เวลา */}
+                                {index % 4 === 0 && (
+                                  <span className="absolute bottom-1/4 left-0 right-0 text-center text-[10px] leading-none text-black">
+                                    {timeLabel}
+                                  </span>
+                                )}
+                              </div>
                             );
                           })}
                         </div>
