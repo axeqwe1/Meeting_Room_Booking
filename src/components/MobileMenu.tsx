@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
+import { useAuth } from "../context/AuthContext";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isClosing, setIsClosing] = useState<boolean>(false);
-
+  const { user } = useAuth();
   const handleNavigation = (path: string) => {
     navigate(path);
     handleClose();
@@ -82,6 +83,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
               Calendar
             </span>
           </button>
+          {/*  */}
+
           <button
             onClick={() => handleNavigation("/roomavaliable")}
             className={`w-full flex items-center px-4 py-3 rounded-md ${
@@ -100,23 +103,25 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             </span>
           </button>
 
-          <button
-            onClick={() => handleNavigation("/rooms")}
-            className={`w-full flex items-center px-4 py-3 rounded-md ${
-              isActive("/rooms")
-                ? "text-blue-600 bg-blue-50"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            <LayoutGrid
-              className={`h-5 w-5 mr-3 ${
-                isActive("/rooms") ? "text-blue-500" : "text-gray-500"
+          {(user?.department === "IT" || user?.department === "HR") && (
+            <button
+              onClick={() => handleNavigation("/rooms")}
+              className={`w-full flex items-center px-4 py-3 rounded-md ${
+                isActive("/rooms")
+                  ? "text-blue-600 bg-blue-50"
+                  : "text-gray-600 hover:bg-gray-50"
               }`}
-            />
-            <span className={isActive("/rooms") ? "font-medium" : ""}>
-              Rooms
-            </span>
-          </button>
+            >
+              <LayoutGrid
+                className={`h-5 w-5 mr-3 ${
+                  isActive("/rooms") ? "text-blue-500" : "text-gray-500"
+                }`}
+              />
+              <span className={isActive("/rooms") ? "font-medium" : ""}>
+                Rooms
+              </span>
+            </button>
+          )}
 
           <button
             onClick={() => handleNavigation("/settings")}
