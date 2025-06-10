@@ -182,7 +182,7 @@ const RoomAvaliable: React.FC = () => {
             </button>
 
             <span className="text-sm font-semibold text-gray-800 text-center">
-              {format(selectedDate, "EEE, d mmm")}
+              {format(selectedDate, "EEE, d MMM")}
             </span>
 
             <button

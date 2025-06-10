@@ -224,12 +224,22 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
           )}
 
           <div>
-            <label
-              htmlFor="imageUrl"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Image URL*
-            </label>
+            <div className="flex flex-row justify-between">
+              <label
+                htmlFor="imageUrl"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Image URL*
+              </label>
+              <a
+                href="https://www.ymt-group.com/uploadImage-app/"
+                className="text-xs hover:bg-gray-500 hover:text-accent px-1 rounded-md"
+                target="_blank"
+              >
+                conver img to url here
+              </a>
+            </div>
+
             <input
               type="url"
               id="imageUrl"
