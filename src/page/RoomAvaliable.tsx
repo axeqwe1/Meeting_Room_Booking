@@ -156,9 +156,9 @@ const RoomAvaliable: React.FC = () => {
 
   return (
     <>
-      <div className="container max-w-[1200px]">
+      <div className="container max-w-[1200px] mx-auto">
         {/* Date Navigation */}
-        <div className="flex items-center justify-center space-x-3 px-4 py-3 bg-white border-b">
+        <div className="flex items-center justify-center space-x-3 px-4 py-3 mb-1 bg-white border-b">
           <button
             onClick={goToToday}
             className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
