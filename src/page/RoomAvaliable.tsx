@@ -165,6 +165,13 @@ const RoomAvaliable: React.FC = () => {
           >
             Today
           </button>
+          <input
+            type="date"
+            className="input w-40"
+            value={format(selectedDate, "yyyy-MM-dd")}
+            onChange={(e) => setSelectedDate(new Date(e.target.value))}
+          />
+
           <button
             onClick={() => navigateDate("prev")}
             className="p-1.5 rounded-md hover:bg-gray-100"
@@ -237,10 +244,10 @@ const RoomAvaliable: React.FC = () => {
                       </div>
                     </h2>
 
-                    <div className="flex flex-row py-2 mt-1">
+                    <div className="flex flex-row py-2 mt-1 ">
                       {item.amenities.map((item) => {
                         return (
-                          <div className="badge badge-primary text-white">
+                          <div className="badge badge-primary text-white mr-1 text-xs">
                             {item}
                           </div>
                         );

@@ -13,6 +13,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate, NavLink } from "react-router-dom";
 import { SignOut } from "../api/Auth";
+import { all } from "axios";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -22,7 +23,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -93,6 +94,14 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
         <nav className="px-2 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
+            if (
+              user?.department != null &&
+              user.department !== "IT" &&
+              user.department !== "HR" &&
+              item.label === "Rooms"
+            ) {
+              return null;
+            }
             return (
               <NavLink
                 key={item.label}
