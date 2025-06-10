@@ -158,49 +158,54 @@ const RoomAvaliable: React.FC = () => {
     <>
       <div className="container max-w-[1200px] mx-auto">
         {/* Date Navigation */}
-        <div className="flex items-center justify-center space-x-3 px-4 py-3 mb-1 bg-white border-b">
-          <button
-            onClick={goToToday}
-            className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            Today
-          </button>
-          <input
-            type="date"
-            className="input w-40"
-            value={format(selectedDate, "yyyy-MM-dd")}
-            onChange={(e) => setSelectedDate(new Date(e.target.value))}
-          />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-3 mb-1 bg-white border-b">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-3">
+            <button
+              onClick={goToToday}
+              className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Today
+            </button>
 
-          <button
-            onClick={() => navigateDate("prev")}
-            className="p-1.5 rounded-md hover:bg-gray-100"
-          >
-            <ChevronLeft className="h-5 w-5 text-gray-500" />
-          </button>
-          <span className="text-base font-semibold text-gray-800 text-center min-w-0 flex-1 lg:min-w-[200px] lg:flex-none">
-            {format(selectedDate, "EEE, MMM d, yyyy")}
-          </span>
-          <button
-            onClick={() => navigateDate("next")}
-            className="p-1.5 rounded-md hover:bg-gray-100"
-          >
-            <ChevronRight className="h-5 w-5 text-gray-500" />
-          </button>
+            <input
+              type="date"
+              className="input w-60 text-sm"
+              value={format(selectedDate, "yyyy-MM-dd")}
+              onChange={(e) => setSelectedDate(new Date(e.target.value))}
+            />
+
+            <button
+              onClick={() => navigateDate("prev")}
+              className="p-1.5 rounded-md hover:bg-gray-100"
+            >
+              <ChevronLeft className="h-5 w-5 text-gray-500" />
+            </button>
+
+            <span className="text-sm font-semibold text-gray-800 text-center">
+              {format(selectedDate, "EEE, d mmm")}
+            </span>
+
+            <button
+              onClick={() => navigateDate("next")}
+              className="p-1.5 rounded-md hover:bg-gray-100"
+            >
+              <ChevronRight className="h-5 w-5 text-gray-500" />
+            </button>
+          </div>
+
           {user?.factorie == "All" && (
-            <div className="dropdown dropdown-bottom">
+            <div className="dropdown dropdown-bottom self-center sm:self-auto">
               <div
                 tabIndex={0}
                 role="button"
-                className="hover:cursor-pointer px-3 py-1 text-sm bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 w-[80px] hover:text-black"
+                className="hover:cursor-pointer px-3 py-1 text-sm bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 w-[100px] text-center"
                 ref={dropdownRef}
               >
-                {" "}
                 {factorie ? factorie : "Choose Factory"} ⬇️
               </div>
               <ul
                 tabIndex={0}
-                className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
+                className="dropdown-content menu bg-base-100 rounded-box z-10 w-52 p-2 shadow-sm"
               >
                 {["All", "YPT", "GNX"].map((factory) => (
                   <li key={factory}>
@@ -220,6 +225,7 @@ const RoomAvaliable: React.FC = () => {
             </div>
           )}
         </div>
+
         {allRooms.map((item) => {
           const segments = getTimelineSegments(item.id);
           const roomBookingsForDay = getListBookingToday(item.id);
