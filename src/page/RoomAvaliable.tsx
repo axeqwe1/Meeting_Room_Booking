@@ -103,18 +103,49 @@ const RoomAvaliable: React.FC = () => {
   };
 
   const getTimelineSegments = (roomId: any) => {
-    const roomBookings = getRoomBookings(roomId);
+    const roomBookings = allBookings.filter((item) => {
+      if (item.roomId !== roomId) return false;
+
+      const bookingStart = new Date(item.start);
+      const bookingEnd = new Date(item.end);
+
+      const dayStart = new Date(
+        Date.UTC(
+          selectedDate.getUTCFullYear(),
+          selectedDate.getUTCMonth(),
+          selectedDate.getUTCDate(),
+          0,
+          0,
+          0,
+          0
+        )
+      );
+
+      const dayEnd = new Date(
+        Date.UTC(
+          selectedDate.getUTCFullYear(),
+          selectedDate.getUTCMonth(),
+          selectedDate.getUTCDate(),
+          23,
+          59,
+          59,
+          999
+        )
+      );
+
+      // ✅ Booking ไหนก็ตามที่ "ซ้อนทับ" กับวันที่นี้
+      return bookingEnd >= dayStart && bookingStart <= dayEnd;
+    });
 
     const parsedBookings = roomBookings.map((booking) => ({
       ...booking,
-      start: new Date(booking.start), // ISO strings, so UTC by default
+      start: new Date(booking.start),
       end: new Date(booking.end),
     }));
 
     const segments = [];
     const totalMinutes = 11 * 60;
 
-    // แปลง selectedDate เป็น UTC 00:00:00
     const utcDate = new Date(
       Date.UTC(
         selectedDate.getUTCFullYear(),
@@ -125,7 +156,7 @@ const RoomAvaliable: React.FC = () => {
 
     for (let minute = 0; minute < totalMinutes; minute += 30) {
       const currentTime = new Date(utcDate);
-      currentTime.setUTCHours(8, minute, 0, 0); // เริ่มที่ 08:00 UTC
+      currentTime.setUTCHours(8, minute, 0, 0);
 
       const nextTime = new Date(currentTime);
       nextTime.setUTCMinutes(nextTime.getUTCMinutes() + 30);

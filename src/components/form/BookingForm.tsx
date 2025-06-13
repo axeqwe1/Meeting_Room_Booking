@@ -250,14 +250,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
             }
             return false;
           });
-          if (hasPartialBooking) {
-            // มีรายชั่วโมงอยู่แล้ว ห้ามจอง all-day หรือข้ามวัน
-            return resolve({
-              success: false,
-              message:
-                "Partial bookings already exist on this day. Cannot book all-day or multi-day.",
-            });
-          }
+          // if (hasPartialBooking) {
+          //   // มีรายชั่วโมงอยู่แล้ว ห้ามจอง all-day หรือข้ามวัน
+          //   return resolve({
+          //     success: false,
+          //     message:
+          //       "Partial bookings already exist on this day. Cannot book all-day or multi-day.",
+          //   });
+          // }
         }
 
         // 2. ถ้ามี booking all-day หรือข้ามวันในวันนั้น ห้ามจองรายชั่วโมงหรือช่วงใด ๆ ซ้ำวันนั้น
@@ -285,13 +285,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
           }
           return false;
         });
-        if (hasAllDayOrCrossDayBooking) {
-          return resolve({
-            success: false,
-            message:
-              "All-day or cross-day bookings already exist on this day. Cannot book partial time.",
-          });
-        }
+        // if (hasAllDayOrCrossDayBooking) {
+        //   return resolve({
+        //     success: false,
+        //     message:
+        //       "All-day or cross-day bookings already exist on this day. Cannot book partial time.",
+        //   });
+        // }
 
         console.log("Reached overlap check");
         // 3. เช็ค overlap ปกติ (timestamp) เผื่อกรณีจองช่วงเวลาเดียวกัน
